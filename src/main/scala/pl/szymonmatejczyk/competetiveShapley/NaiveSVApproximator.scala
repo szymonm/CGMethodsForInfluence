@@ -4,8 +4,7 @@ import scala.collection._
 import pl.szymonmatejczyk.competetiveShapley.utils.GeneratorOverIterator
 
 trait NaiveSVApproximator {
-  def approximate[T](generator : () => Option[Seq[T]], calculator : Seq[T] => Map[T, Double]) :
-      Map[T, Double] = {
+  def approximate[T](generator: () => Option[Seq[T]], calculator: Seq[T] => Map[T, Double]): Map[T, Double] = {
     val res = mutable.Map[T, Double]()
     var counter = 0
     new GeneratorOverIterator(generator).foreach {

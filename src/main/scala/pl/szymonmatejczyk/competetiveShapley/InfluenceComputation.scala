@@ -16,24 +16,24 @@ import scalax.collection.GraphTraversal
 import pl.szymonmatejczyk.competetiveShapley.utils.Cache
 
 trait InfluenceComputation extends Cache with Logging {
-  val r : Random
-  
+  val r: Random
+
   val g: Graph[Int, WDiEdge]
   val weightDenominator: Double
 
-  def getInfluences() : PIMap[Int, Double]
-  def computeTotatInfluences() : immutable.Map[Int, Double]
-  
-  var ldagNodes : mutable.Map[Int, immutable.Map[Int, Int]]
-  
-  def debug(s : Any)
-  
+  def getInfluences(): PIMap[Int, Double]
+  def computeTotatInfluences(): immutable.Map[Int, Double]
+
+  var ldagNodes: mutable.Map[Int, immutable.Map[Int, Int]]
+
+  def debug(s: Any)
+
   var currentInfluences: PIMap[Int, Double] = null
-  var incrementalInfluence : collection.mutable.Map[Int, Double] = null
-    // Map: (LDAG, node) -> probability
-  var activationProbability : collection.mutable.Map[(Int, Int), Double] = null
-  var currentInitialSet : Set[Int] = null
-  
+  var incrementalInfluence: collection.mutable.Map[Int, Double] = null
+  // Map: (LDAG, node) -> probability
+  var activationProbability: collection.mutable.Map[(Int, Int), Double] = null
+  var currentInitialSet: Set[Int] = null
+
   def resetCache() {
     currentInitialSet = null
     currentInfluences = null
@@ -41,7 +41,7 @@ trait InfluenceComputation extends Cache with Logging {
     // Map: (LDAG, node) -> probability
     activationProbability = null
   }
-  
+
   def prepareData() {
     currentInitialSet = collection.mutable.HashSet[Int]()
     currentInfluences = new PIMap[Int, Double](0.0) ++= getInfluences()
@@ -49,7 +49,7 @@ trait InfluenceComputation extends Cache with Logging {
       computeTotatInfluences()
     activationProbability = collection.mutable.HashMap[(Int, Int), Double]().withDefault(_ => 0.0)
   }
-  
+
   abstract override def clearCache() {
     logger.debug("Clearing IC data")
     resetCache()
@@ -75,7 +75,6 @@ trait InfluenceComputation extends Cache with Logging {
     computeTotalInfluenceFromActivationProbabilities()
   }
 
-
   def addInfluenceNode(addedNode: Int) {
     debug("Added node: " + addedNode)
     currentInfluences.byFirstIterator(addedNode).foreach {
@@ -89,32 +88,38 @@ trait InfluenceComputation extends Cache with Logging {
           // 20
           g.get(addedNode).traverse(direction = GraphTraversal.Predecessors,
             breadthFirst = true,
-            edgeFilter = {e : g.EdgeT => SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
-            														true, true)(e.toEdgeIn)})(
+            edgeFilter = { e: g.EdgeT =>
+              SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
+                true, true)(e.toEdgeIn)
+            })(
               nodeVisitor = _ => GraphTraversal.VisitorReturn.Continue,
               edgeVisitor = e => {
                 debug("first phase edge: " + e)
                 deltaInfluence += (e._1.value) -> (deltaInfluence(e._1.value) +
                   e.weight / weightDenominator * deltaInfluence(e._2.value))
-                })
+              })
           // 21
-          g.get(addedNode).traverse(direction = GraphTraversal.Predecessors, breadthFirst = true, 
-            edgeFilter = {e : g.EdgeT => SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
-            														true, true)(
-                  e.toEdgeIn)})(
+          g.get(addedNode).traverse(direction = GraphTraversal.Predecessors, breadthFirst = true,
+            edgeFilter = { e: g.EdgeT =>
+              SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
+                true, true)(
+                  e.toEdgeIn)
+            })(
               nodeVisitor =
                 u => {
                   currentInfluences((u, to)) += deltaInfluence(u) // 21
                   incrementalInfluence(u) += deltaInfluence(u) * (1 - activationProbability((to, u))) //22 
                   GraphTraversal.VisitorReturn.Continue
                 })
-          
+
           val deltaAp = mutable.HashMap[Int, Double]().withDefaultValue(0.0)
           deltaAp += addedNode -> (1 - activationProbability((to, addedNode))) //24
 
           g.get(addedNode).traverse(direction = GraphTraversal.Successors, breadthFirst = true,
-            edgeFilter = {e : g.EdgeT => SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
-            														false)(e.toEdgeIn)})(
+            edgeFilter = { e: g.EdgeT =>
+              SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
+                false)(e.toEdgeIn)
+            })(
               edgeVisitor =
                 e => {
                   debug("2nd phase edge: " + e.toString)
@@ -123,8 +128,10 @@ trait InfluenceComputation extends Cache with Logging {
           debug("DeltaAp")
           debug(deltaAp.mkString(";"))
           g.get(addedNode).traverse(direction = GraphTraversal.Successors, breadthFirst = true,
-            edgeFilter = {e : g.EdgeT => SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
-            														false)(e.toEdgeIn)})(
+            edgeFilter = { e: g.EdgeT =>
+              SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
+                false)(e.toEdgeIn)
+            })(
               nodeVisitor =
                 u => {
                   debug("2nd phase node: " + u.toString)

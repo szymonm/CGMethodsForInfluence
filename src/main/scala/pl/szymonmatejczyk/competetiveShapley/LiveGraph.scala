@@ -9,12 +9,12 @@ import scala.util.Random
 import scalax.collection.config.CoreConfig
 
 trait LiveGraph {
-  val g : Graph[Int, WDiEdge]
-  val weightDenominator : Double
-  val r : Random
- 
+  val g: Graph[Int, WDiEdge]
+  val weightDenominator: Double
+  val r: Random
+
   def randomLiveGraph(): Graph[Int, DiEdge] = {
-    implicit val config : CoreConfig = new CoreConfig()
+    implicit val config: CoreConfig = new CoreConfig()
     val builder = Graph.newBuilder[Int, DiEdge]
     g.edges.toIterable.foreach {
       e =>

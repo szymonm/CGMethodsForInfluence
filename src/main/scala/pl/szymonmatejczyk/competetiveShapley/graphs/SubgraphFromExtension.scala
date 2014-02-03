@@ -16,9 +16,9 @@ import com.typesafe.scalalogging.slf4j.Logging
 object SubgraphFromExtension extends Logging {
   val r = new Random
   def randomSubgraph[N: Manifest, E[N] <: EdgeLikeIn[N]](graph: Graph[N, E], size: Int,
-    fromNode: Option[N]) : Graph[N, E] = {
-    def getRandomNode() : graph.NodeT = {
-//      graph.filterNot(graph.having(node = _.outDegree > 5)).nodes.draw(r)
+    fromNode: Option[N]): Graph[N, E] = {
+    def getRandomNode(): graph.NodeT = {
+      //      graph.filterNot(graph.having(node = _.outDegree > 4)).nodes.draw(r)
       val arr = graph.nodes.filter(_.outDegree > 4).toIndexedSeq
       val pos = r.nextInt(arr.size)
       arr(pos)
@@ -29,13 +29,13 @@ object SubgraphFromExtension extends Logging {
     }
     var nodes = Set[N]()
     startingNode.traverse(maxDepth = math.sqrt(size).toInt)(nodeVisitor =
-                u => {
-                  nodes += (u.value)
-                  if (nodes.size < size)
-                    GraphTraversal.VisitorReturn.Continue
-                  else
-                    GraphTraversal.VisitorReturn.Cancel    
-                })
+      u => {
+        nodes += (u.value)
+        if (nodes.size < size)
+          GraphTraversal.VisitorReturn.Continue
+        else
+          GraphTraversal.VisitorReturn.Cancel
+      })
     if (nodes.size < size / 2) {
       logger.warn("Subgraph degenerated...restarting")
       randomSubgraph(graph, size, fromNode)

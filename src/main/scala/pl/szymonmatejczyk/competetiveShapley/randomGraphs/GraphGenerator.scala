@@ -5,7 +5,7 @@ import scalax.collection.GraphPredef._
 import scalax.collection.edge.WDiEdge
 
 trait GraphGenerator {
-  def generateGraph[N : Manifest](nodes : Seq[N]) : Graph[N, WDiEdge]
+  def generateGraph[N: Manifest](nodes: Seq[N]): Graph[N, WDiEdge]
 }
 
 object GraphGenerator {

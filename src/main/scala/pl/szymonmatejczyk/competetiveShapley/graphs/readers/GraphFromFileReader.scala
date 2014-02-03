@@ -13,7 +13,7 @@ import scala.collection.mutable.ListBuffer
 import pl.szymonmatejczyk.competetiveShapley.utils.RandomDivisionSampler
 
 trait GraphFromFileReader extends Logging {
-  
+
   object Int {
     def unapply(s: String): Option[Int] = try {
       Some(s.toInt)
@@ -21,17 +21,17 @@ trait GraphFromFileReader extends Logging {
       case _: java.lang.NumberFormatException => None
     }
   }
-  
-  def assignRandomWeights(edgesByTarget : Map[Int, Seq[Int]],
-      weightDenominator : Double) : List[WDiEdge[Int]] = {
+
+  def assignRandomWeights(edgesByTarget: Map[Int, Seq[Int]],
+    weightDenominator: Double): List[WDiEdge[Int]] = {
     val edges = List.newBuilder[WDiEdge[Int]]
-    
-    edgesByTarget.foreach{
+
+    edgesByTarget.foreach {
       case (target, listOfSourcesBuilder) =>
         val listOfSources = listOfSourcesBuilder
         import RandomDivisionSampler._
-        (listOfSources.view zip sampleDivisionOfUnitUniformly(listOfSources.length).view).foreach{
-          case (source, weight) => 
+        (listOfSources.view zip sampleDivisionOfUnitUniformly(listOfSources.length).view).foreach {
+          case (source, weight) =>
             if ((weight * weightDenominator).toLong == 0) {
               logger.debug("Edge weight == 0. Deleting.")
             } else {
@@ -77,15 +77,14 @@ object GraphFromFileReader {
   sealed trait FileType
   case object GML extends FileType
   case object TXT extends FileType
-  
-  def read(filename : String, typ : FileType, withWeights : Boolean, weightDenominator : Long) : 
-    Graph[Int, WDiEdge]= {
+
+  def read(filename: String, typ: FileType, withWeights: Boolean, weightDenominator: Long): Graph[Int, WDiEdge] = {
     (typ, withWeights) match {
       case (GML, true) => (new GMLFileReader()).readFromGMLWeighted(filename, weightDenominator)
       case (GML, false) => (new GMLFileReader()).readFromGML(filename, weightDenominator)
       case (TXT, false) => (new TXTFileReader).readFromTxt(filename, weightDenominator)
       case (TXT, true) => throw new UnsupportedOperationException
     }
-    
+
   }
 }

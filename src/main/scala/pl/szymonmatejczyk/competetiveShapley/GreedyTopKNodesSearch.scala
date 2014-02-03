@@ -3,9 +3,9 @@ package pl.szymonmatejczyk.competetiveShapley
 import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
 
 trait GreedyTopKNodesSearch extends InfluenceComputation {
-  def threshold : Double
-  def threshold_=(threshold : Double)
-  
+  def threshold: Double
+  def threshold_=(threshold: Double)
+
   def greedyMostInfluentSearch(k: Int, threshold_ : Option[Double] = None): List[Int] = {
     threshold_ match {
       case Some(x) => threshold_=(x)
@@ -29,9 +29,10 @@ trait GreedyTopKNodesSearch extends InfluenceComputation {
         debug("Activation probabilities")
         debug(activationProbability.mkString(";"))
       } catch {
-        case e: UnsupportedOperationException => println(incrementalInfluence.mkString(" "))
-                                                 println(g.mkString(" "))
-                                                 throw e
+        case e: UnsupportedOperationException =>
+          println(incrementalInfluence.mkString(" "))
+          println(g.mkString(" "))
+          throw e
       }
     }
     builder.result

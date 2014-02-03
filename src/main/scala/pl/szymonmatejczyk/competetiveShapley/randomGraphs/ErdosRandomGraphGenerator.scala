@@ -9,12 +9,14 @@ import scalax.collection.edge.WDiEdge
 
 import pl.szymonmatejczyk.competetiveShapley.common._
 
-class ErdosRandomGraphGenerator(p : Double) extends GraphGenerator {
+class ErdosRandomGraphGenerator(p: Double) extends GraphGenerator {
   val r = new Random
-  override def generateGraph[N : Manifest](nodes : Seq[N]) : Graph[N, WDiEdge] = {
-    val edges = for {x <- nodes
-    				 y <- nodes
-    				 if r.nextDouble < p} yield x ~> y % 1L
+  override def generateGraph[N: Manifest](nodes: Seq[N]): Graph[N, WDiEdge] = {
+    val edges = for {
+      x <- nodes
+      y <- nodes
+      if r.nextDouble < p
+    } yield x ~> y % 1L
     Graph.from(nodes, edges)
   }
 }
