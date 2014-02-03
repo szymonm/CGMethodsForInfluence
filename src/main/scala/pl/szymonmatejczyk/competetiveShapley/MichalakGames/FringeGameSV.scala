@@ -1,6 +1,8 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.MichalakGames
 
 import scala.collection._
+import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import scalax.collection.GraphPredef.graphParamsToPartition
 
 trait FringeGameSV {
   self : InfluenceNetwork =>
