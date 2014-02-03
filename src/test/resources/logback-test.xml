@@ -1,0 +1,48 @@
+<configuration scan="true" scanPeriod="30 seconds">
+  <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/test.log</file>
+    <encoder>
+      <pattern>%date %level %msg%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <maxIndex>10</maxIndex>
+      <FileNamePattern>logs/test.log.%i.gz</FileNamePattern>
+    </rollingPolicy>
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <maxFileSize>20MB</maxFileSize>
+    </triggeringPolicy>
+  </appender>
+  <appender name="FILE-logging" class="ch.qos.logback.core.rolling.RollingFileAppender">
+    <file>logs/logging-test.log</file>
+    <encoder>
+      <pattern>%date %level %msg%n</pattern>
+    </encoder>
+    <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+      <maxIndex>10</maxIndex>
+      <FileNamePattern>logs/logging-test.log.%i.gz</FileNamePattern>
+    </rollingPolicy>
+    <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+      <maxFileSize>20MB</maxFileSize>
+    </triggeringPolicy>
+  </appender>
+  <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>INFO</level>
+    </filter>
+    <encoder>
+      <pattern>%date %level %msg%n</pattern>
+    </encoder>
+  </appender>
+  
+  <logger name="pl.szymonmatejczyk.competetiveShapley" level="info">
+    <appender-ref ref="CONSOLE" />
+  </logger>
+  
+  <logger name="ch.qos.logback" level="info">
+    <appender-ref ref="FILE-logging" />
+  </logger>
+  
+  <root level="debug">
+    <appender-ref ref="FILE" />
+  </root>
+</configuration>
