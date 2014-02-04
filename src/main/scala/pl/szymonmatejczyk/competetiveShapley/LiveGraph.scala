@@ -7,11 +7,12 @@ import scalax.collection.edge.Implicits._
 import scalax.collection.edge.WDiEdge
 import scala.util.Random
 import scalax.collection.config.CoreConfig
+import scala.concurrent._
+import ExecutionContext.Implicits.global
+import pl.szymonmatejczyk.competetiveShapley.utils.FutureExtensions
 
 trait LiveGraph {
-  val g: Graph[Int, WDiEdge]
-  val weightDenominator: Double
-  val r: Random
+  self : InfluenceNetwork => 
 
   def randomLiveGraph(): Graph[Int, DiEdge] = {
     implicit val config: CoreConfig = new CoreConfig()
@@ -44,4 +45,16 @@ trait LiveGraph {
     }
     Set[Int]() ++ visited.toList
   }
+  
+  def randomSpreadFrom(influenceSet : Set[Int]) : Future[Int] = {
+    future {
+      randomLiveGraphFrom(influenceSet).size
+    }
+  }
+  
+  def randomSpreadingFrom(influenceSet : Set[Int], n : Int) : Future[Double] = {
+    import FutureExtensions._
+    Future.all(List.range(0,n).map{_ => randomSpreadFrom(influenceSet)}).
+      map(l => l.sum.toDouble / n)
+  } 
 }
