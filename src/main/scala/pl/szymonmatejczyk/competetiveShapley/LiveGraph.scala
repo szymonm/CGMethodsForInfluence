@@ -54,7 +54,7 @@ trait LiveGraph {
   
   def randomSpreadingFrom(influenceSet : Set[Int], n : Int) : Future[Double] = {
     import FutureExtensions._
-    Future.all(List.range(0,n).map{_ => randomSpreadFrom(influenceSet)}).
+    Future.all(Iterator.range(0,n).map{_ => randomSpreadFrom(influenceSet)}.toList).
       map(l => l.sum.toDouble / n)
   } 
 }
