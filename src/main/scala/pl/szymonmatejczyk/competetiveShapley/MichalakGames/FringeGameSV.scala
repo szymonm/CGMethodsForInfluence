@@ -14,6 +14,7 @@ trait FringeGameSV {
   def degreeFactor(d : Int) = 1.0 / (1.0 + d)
   
   def computeSingleSV(node : Int) : Double = {
-    g.get(node).diSuccessors.view.map{x => degreeFactor(x.outDegree)}.sum
+    val n = g.get(node)
+    n.diSuccessors.view.map{x => degreeFactor(x.inDegree)}.sum + degreeFactor(n.inDegree)
   }
 }
