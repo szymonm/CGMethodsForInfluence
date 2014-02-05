@@ -25,13 +25,25 @@ trait DistanceCutoffGameSV {
   }
   
   def computeSV(k : Int, cutoff : Double) : Map[Int, Double] = {
-    g.nodes.toOuterNodes.map{x => (x, computeSingleSV(x, k))}.toMap
+    val distances = floydWarshall()
+    g.nodes.toOuterNodes.map{x => 
+      (x, computeSingleSV(x, k, distances, extInDegreeMap(distances, cutoff)))}.toMap
   }
   
-  def degreeFactor(d : Int) = 1.0  / (1.0 + d)
+  def degreeFactor(d : Double) = 1.0  / (1.0 + d)
   
-  def computeSingleSV(node : Int, cutoff : Double) : Double = {
-    val m = floydWarshall()
-    m.byFirstIterator(node).filter{_._2 < cutoff}.map{x => degreeFactor(x._1._2)}.sum
+  def extInDegreeMap(distMap : PIMap[Int, Double], cutoff : Double) : Map[Int, Double] = {
+    var res = mutable.Map[Int, Double]()
+    g.nodes.foreach{
+      node => 
+        res(node.value) = distMap.bySecondIterator(node.value).filter(_._2 < cutoff).size
+    }
+    res
+  }
+  
+  def computeSingleSV(node : Int, cutoff : Double, distances : PIMap[Int, Double], 
+                      extInDegreeMap : Map[Int, Double]) : Double = {
+    distances.byFirstIterator(node).filter{_._2 < cutoff}.map{
+      x => degreeFactor(extInDegreeMap(x._1._2))}.sum
   }
 }

@@ -15,6 +15,6 @@ trait KFringeGameSV {
   
   def computeSingleSV(node : Int, k : Int) : Double = {
     val n = g.get(node) 
-    n.diSuccessors.view.map{x => degreeFactor(x.outDegree, k)}.sum + degreeFactor(n.outDegree, k)
+    n.diSuccessors.view.map{x => degreeFactor(x.inDegree, k)}.sum + degreeFactor(n.inDegree, k)
   }
 }
