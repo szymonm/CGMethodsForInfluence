@@ -26,6 +26,6 @@ import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGene
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
 import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphFromExtension
 
-class WeightedDirectedNetwork(override val g: Graph[Int, WDiEdge], val weightDenominator: Double = 100000.0)
+class WeightedDirectedNetwork(val g: Graph[Int, WDiEdge], val weightDenominator: Double = 100000.0)
         extends Network[Int, WDiEdge](g, Some(weightDenominator))  {
 }

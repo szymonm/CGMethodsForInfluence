@@ -2,11 +2,9 @@ package pl.szymonmatejczyk.competetiveShapley.experiments
 
 import java.io.PrintWriter
 import java.io.File
-
 import scala.collection._
 import scala.collection.mutable.ListBuffer
 import com.typesafe.scalalogging.slf4j.Logging
-
 import pl.szymonmatejczyk.competetiveShapley.utils._
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils.time
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader._
@@ -15,7 +13,7 @@ import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.ErdosRandomGraphGenerator
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GraphGenerator
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GeographicalThresholdGraphGenerator
-import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GeographicalThresholdGraphGenerator
+import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 
 object GreedySVBIExperiment extends App with Logging {
   val WEIGHT_DENOMINATOR = 10000L
@@ -25,15 +23,16 @@ object GreedySVBIExperiment extends App with Logging {
 
   val BISV_ITER_NO = 20
 
-  class ExperimentCase(val name: String, val network: WeightedDirectedNetwork)
+  class ExperimentCase(val name: String, val network: InfluenceNetwork)
 
   class DataCase(name: String, val file: String, val filetype: FileType,
     val withWeights: Boolean = false)
-    extends ExperimentCase(name, WeightedDirectedNetwork.fromFile(file, filetype, withWeights).
-      restrictSize(MAX_GRAPH_SIZE))
+    extends ExperimentCase(name, InfluenceNetwork.fromFile(file, filetype, withWeights).
+        restrictSize(MAX_GRAPH_SIZE))
 
-  class GeneratedCase(val generator: GraphGenerator, val size: Int) extends ExperimentCase(generator.getClass().getSimpleName(),
-    new WeightedDirectedNetwork(generator.generateGraph(1 to size)))
+  class GeneratedCase(val generator: GraphGenerator, val size: Int) extends 
+      ExperimentCase(generator.getClass().getSimpleName(),
+    new InfluenceNetwork(generator.generateGraph(1 to size)))
 
   val TXT_PATH = "../graphs/txt/"
   val cases = Iterable( //new DataCase("football", "../graphs/gml/football.gml", GML),

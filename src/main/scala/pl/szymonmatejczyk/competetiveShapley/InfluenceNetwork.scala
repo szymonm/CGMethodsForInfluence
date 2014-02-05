@@ -84,7 +84,7 @@ object InfluenceNetwork extends Logging {
   }
 
   def fromFile(filename: String, filetype: GraphFromFileReader.FileType, withWeights: Boolean): 
-      WeightedDirectedNetwork = {
+      InfluenceNetwork = {
     new InfluenceNetwork(GraphFromFileReader.read(filename, filetype, withWeights,
       WEIGHT_DENOMINATOR))
   }
