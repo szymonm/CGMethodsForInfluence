@@ -10,7 +10,7 @@ import scalax.collection.edge.WLDiEdge
 
 class NetworkTest extends FlatSpec with ShouldMatchers {
 
-  val n = new Network(Graph(1,2,3, 1~2))
+  val n = new Network(Graph(1,2,3, 1~2), None)
   def majorityVoting(s : Set[Int]) : Double = if (s.size > 1) 1 else 0
   
   def vetoGroup(group : Set[Int])(s : Set[Int]) : Double = if (group.diff(s).isEmpty) 1 else 0

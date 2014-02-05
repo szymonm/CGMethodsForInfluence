@@ -1,12 +1,12 @@
 package pl.szymonmatejczyk.competetiveShapley.MichalakGames
 
 import scala.collection._
-import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import pl.szymonmatejczyk.competetiveShapley.WeightedDirectedNetwork
 import scalax.collection.GraphPredef.graphParamsToPartition
 import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
 
 trait DistanceCutoffGameSV {
-  self : InfluenceNetwork =>
+  self : WeightedDirectedNetwork =>
     
   def floydWarshall() : PIMap[Int, Double] = {
     val dist = new PIMap[Int, Double](Double.MaxValue)
@@ -36,14 +36,14 @@ trait DistanceCutoffGameSV {
     var res = mutable.Map[Int, Double]()
     g.nodes.foreach{
       node => 
-        res(node.value) = distMap.bySecondIterator(node.value).filter(_._2 < cutoff).size
+        res(node.value) = distMap.bySecondIterator(node.value).filter(_._2 <= cutoff).size - 1
     }
     res
   }
   
   def computeSingleSV(node : Int, cutoff : Double, distances : PIMap[Int, Double], 
                       extInDegreeMap : Map[Int, Double]) : Double = {
-    distances.byFirstIterator(node).filter{_._2 < cutoff}.map{
+    distances.byFirstIterator(node).filter{_._2 <= cutoff}.map{
       x => degreeFactor(extInDegreeMap(x._1._2))}.sum
   }
 }

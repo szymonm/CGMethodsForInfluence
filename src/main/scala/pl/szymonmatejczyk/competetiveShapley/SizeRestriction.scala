@@ -8,14 +8,14 @@ import scalax.collection.edge.WDiEdge
 import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphFromExtension
 
 trait SizeRestriction {
-  self : InfluenceNetwork =>
+  self : WeightedDirectedNetwork =>
     
-  def restrictSize(maxSize: Int, fromNode: Option[Int] = None): InfluenceNetwork = {
+  def restrictSize(maxSize: Int, fromNode: Option[Int] = None): WeightedDirectedNetwork = {
     if (g.size < maxSize)
       self
     else {
       val newGraph = SubgraphFromExtension.randomSubgraph(g, maxSize, fromNode)
-      new InfluenceNetwork(newGraph, weightDenominator)
+      new WeightedDirectedNetwork(newGraph, weightDenominator)
     }
   }
 }

@@ -11,7 +11,9 @@ import scalax.collection.GraphTraversal.VisitorReturn._
 import scala.collection.immutable.TreeMap
 import pl.szymonmatejczyk.competetiveShapley.utils.Cache
 
-class Network[N, E[X] <: EdgeLikeIn[X]](val graph: Graph[N, E]) extends Cache {
+class Network[N, E[X] <: EdgeLikeIn[X]](val graph: Graph[N, E], 
+                                        val weightDenominatorOpt : Option[Double]) 
+    extends Cache {
   type Valuation = Set[N] => Double
 
   def clearCache() {}

@@ -1,0 +1,27 @@
+package pl.szymonmatejczyk.competetiveShapley.MichalakGames
+
+import scala.language.postfixOps
+import org.scalatest._
+import org.scalatest.matchers.ShouldMatchers
+import scala.collection.mutable.HashMap
+import scalax.collection.Graph
+import scalax.collection.GraphPredef._
+import scalax.collection.GraphEdge._
+import scalax.collection.edge.Implicits._
+import scalax.collection.edge.WDiEdge
+import scala.concurrent._
+import scala.concurrent.duration._
+import ExecutionContext.Implicits.global
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import pl.szymonmatejczyk.competetiveShapley.WeightedDirectedNetwork
+import pl.szymonmatejczyk.competetiveShapley.Network
+
+@RunWith(classOf[JUnitRunner])
+class FringeGameSVTest extends FlatSpec with ShouldMatchers {
+  val twoNodes = Graph(1 ~> 2 % 1)
+  val n = new WeightedDirectedNetwork(twoNodes, 1) with FringeGameSV
+  "FringeGameSV" should "compute SV in simplest case" in {
+    n.computeSV() shouldEqual Map(1 -> 1.5, 2 -> 0.5)
+  }
+}

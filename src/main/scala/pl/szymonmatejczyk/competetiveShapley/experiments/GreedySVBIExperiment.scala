@@ -10,7 +10,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 import pl.szymonmatejczyk.competetiveShapley.utils._
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils.time
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader._
-import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import pl.szymonmatejczyk.competetiveShapley.WeightedDirectedNetwork
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.ErdosRandomGraphGenerator
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GraphGenerator
@@ -25,15 +25,15 @@ object GreedySVBIExperiment extends App with Logging {
 
   val BISV_ITER_NO = 20
 
-  class ExperimentCase(val name: String, val network: InfluenceNetwork)
+  class ExperimentCase(val name: String, val network: WeightedDirectedNetwork)
 
   class DataCase(name: String, val file: String, val filetype: FileType,
     val withWeights: Boolean = false)
-    extends ExperimentCase(name, InfluenceNetwork.fromFile(file, filetype, withWeights).
+    extends ExperimentCase(name, WeightedDirectedNetwork.fromFile(file, filetype, withWeights).
       restrictSize(MAX_GRAPH_SIZE))
 
   class GeneratedCase(val generator: GraphGenerator, val size: Int) extends ExperimentCase(generator.getClass().getSimpleName(),
-    new InfluenceNetwork(generator.generateGraph(1 to size)))
+    new WeightedDirectedNetwork(generator.generateGraph(1 to size)))
 
   val TXT_PATH = "../graphs/txt/"
   val cases = Iterable( //new DataCase("football", "../graphs/gml/football.gml", GML),

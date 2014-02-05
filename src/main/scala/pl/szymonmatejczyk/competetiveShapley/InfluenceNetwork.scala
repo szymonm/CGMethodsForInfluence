@@ -26,11 +26,12 @@ import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGene
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
 import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphFromExtension
 
-class InfluenceNetwork(override val g: Graph[Int, WDiEdge], val weightDenominator: Double = 100000.0)
-        extends Network[Int, WDiEdge](g) with LiveGraph with Logging with GreedyTopKNodesSearch 
+class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightDenominator: Double = 100000.0)
+      extends WeightedDirectedNetwork(g, weightDenominator)
+        with LiveGraph with Logging with GreedyTopKNodesSearch 
         with InfluenceSVCalculator with LDAGApproximation with SizeRestriction 
-        with SingularInfluences with InfluenceNetworkLDAGApproximation with LDAGBanzhafIndex {
-  implicit val config = new CoreConfig()
+        with SingularInfluences with InfluenceNetworkLDAGApproximation with LDAGBanzhafIndex{
+    implicit val config = new CoreConfig()
   val r = new Random
   val DEFAULT_THRESHOLD = 0.3
   private var _threshold = DEFAULT_THRESHOLD
@@ -69,13 +70,12 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], val weightDenominato
         if (from == node) a + value else a
     })
   }
-
-
 }
+
 object InfluenceNetwork extends Logging {
   val WEIGHT_DENOMINATOR = 100000L
 
-  def fromGML(filename: String, withWeights: Boolean = false): InfluenceNetwork = {
+  def fromGML(filename: String, withWeights: Boolean = false): WeightedDirectedNetwork = {
     val reader = new GMLFileReader()
     if (withWeights)
       new InfluenceNetwork(reader.readFromGMLWeighted(filename, WEIGHT_DENOMINATOR), WEIGHT_DENOMINATOR)
@@ -83,7 +83,8 @@ object InfluenceNetwork extends Logging {
       new InfluenceNetwork(reader.readFromGML(filename, WEIGHT_DENOMINATOR), WEIGHT_DENOMINATOR)
   }
 
-  def fromFile(filename: String, filetype: GraphFromFileReader.FileType, withWeights: Boolean): InfluenceNetwork = {
+  def fromFile(filename: String, filetype: GraphFromFileReader.FileType, withWeights: Boolean): 
+      WeightedDirectedNetwork = {
     new InfluenceNetwork(GraphFromFileReader.read(filename, filetype, withWeights,
       WEIGHT_DENOMINATOR))
   }
