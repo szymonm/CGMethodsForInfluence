@@ -8,7 +8,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 import pl.szymonmatejczyk.competetiveShapley.utils._
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils.time
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader._
-import pl.szymonmatejczyk.competetiveShapley.WeightedDirectedNetwork
+import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.ErdosRandomGraphGenerator
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GraphGenerator

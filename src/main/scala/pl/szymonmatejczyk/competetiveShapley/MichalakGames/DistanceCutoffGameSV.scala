@@ -1,7 +1,7 @@
 package pl.szymonmatejczyk.competetiveShapley.MichalakGames
 
 import scala.collection._
-import pl.szymonmatejczyk.competetiveShapley.WeightedDirectedNetwork
+import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import scalax.collection.GraphPredef.graphParamsToPartition
 import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
 
@@ -9,25 +9,27 @@ trait DistanceCutoffGameSV {
   self : WeightedDirectedNetwork =>
     
   def floydWarshall() : PIMap[Int, Double] = {
-    val dist = new PIMap[Int, Double](Double.MaxValue)
-    g.nodes.foreach {n => dist += (((n.value, n.value), 0.0))}
-    g.edges.foreach {e => dist += (((e._1.value, e._2.value), e.weight))}
+    val distMap = new PIMap[Int, Double](Double.MaxValue)
+    def dist(i : Int, j : Int) = distMap(((i, j)))
+    
+    g.nodes.foreach {n => distMap += (((n.value, n.value), 0.0))}
+    g.edges.foreach {e => distMap += (((e._1.value, e._2.value), e.weight))}
     g.nodes.foreach{
       k => g.nodes.foreach{
         i => g.nodes.foreach {
           j => 
-            if (dist(((i.value, j.value))) > dist(((i.value, k.value))) + dist(((k.value, j.value))))
-              dist(((i.value, j.value))) = dist(((i.value, k.value))) + dist(((k.value, j.value)))
+            if (dist(i.value, j.value) > dist(i.value, k.value) + dist(k.value, j.value))
+              distMap(((i.value, j.value))) = dist(i.value, k.value) + dist(k.value, j.value)
         }
       }
     }
-    dist
+    distMap
   }
   
-  def computeSV(k : Int, cutoff : Double) : Map[Int, Double] = {
+  def computeSV(cutoff : Double) : Map[Int, Double] = {
     val distances = floydWarshall()
     g.nodes.toOuterNodes.map{x => 
-      (x, computeSingleSV(x, k, distances, extInDegreeMap(distances, cutoff)))}.toMap
+      (x, computeSingleSV(x, cutoff, distances, extInDegreeMap(distances, cutoff)))}.toMap
   }
   
   def degreeFactor(d : Double) = 1.0  / (1.0 + d)

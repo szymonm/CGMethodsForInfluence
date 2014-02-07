@@ -2,11 +2,11 @@ package pl.szymonmatejczyk.competetiveShapley
 
 import org.scalatest._
 import org.scalatest.matchers.ShouldMatchers
-
 import scalax.collection.Graph
 import scalax.collection.GraphPredef._
 import scalax.collection.GraphEdge._
 import scalax.collection.edge.WLDiEdge
+import pl.szymonmatejczyk.competetiveShapley.graphs.Network
 
 class NetworkTest extends FlatSpec with ShouldMatchers {
 

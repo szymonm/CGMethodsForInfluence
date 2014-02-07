@@ -1,7 +1,7 @@
 package pl.szymonmatejczyk.competetiveShapley.MichalakGames
 
 import scala.collection._
-import pl.szymonmatejczyk.competetiveShapley.WeightedDirectedNetwork
+import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import scalax.collection.GraphPredef.graphParamsToPartition
 
 trait FringeGameSV {

@@ -1,11 +1,7 @@
-package pl.szymonmatejczyk.competetiveShapley
-
-import scala.language.higherKinds
-import scala.collection.immutable.HashMap
+package pl.szymonmatejczyk.competetiveShapley.graphs
 import scalax.collection.Graph
 import scalax.collection.GraphPredef._
 import scalax.collection.GraphEdge._
-import scalax.collection.edge.WLDiEdge
 import scala.util.Random
 import scalax.collection.GraphTraversal.VisitorReturn._
 import scala.collection.immutable.TreeMap

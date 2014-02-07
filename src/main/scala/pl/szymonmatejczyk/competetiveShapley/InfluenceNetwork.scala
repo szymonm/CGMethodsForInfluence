@@ -25,6 +25,7 @@ import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GMLFileReader
 import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGenerator
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
 import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphFromExtension
+import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 
 class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightDenominator: Double = 100000.0)
       extends WeightedDirectedNetwork(g, weightDenominator)
