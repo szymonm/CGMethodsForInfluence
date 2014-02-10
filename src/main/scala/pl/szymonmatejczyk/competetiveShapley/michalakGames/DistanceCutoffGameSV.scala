@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.MichalakGames
+package pl.szymonmatejczyk.competetiveShapley.michalakGames
 
 import scala.collection._
 import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork

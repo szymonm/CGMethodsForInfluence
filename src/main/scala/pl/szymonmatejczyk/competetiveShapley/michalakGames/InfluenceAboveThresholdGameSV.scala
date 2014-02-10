@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.MichalakGames
+package pl.szymonmatejczyk.competetiveShapley.michalakGames
 
 import collection._
 import scalax.collection.Graph

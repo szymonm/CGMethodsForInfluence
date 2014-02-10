@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.MichalakGames
+package pl.szymonmatejczyk.competetiveShapley.michalakGames
 
 import scala.language.postfixOps
 import org.scalatest._
@@ -18,9 +18,10 @@ import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import pl.szymonmatejczyk.competetiveShapley.graphs.Network
 
 @RunWith(classOf[JUnitRunner])
-class DistanceCutoffGameSVTest extends FlatSpec with ShouldMatchers {
+class FringeGameSVTest extends FlatSpec with ShouldMatchers {
   val twoNodes = Graph(1 ~> 2 % 1)
-  val n = new WeightedDirectedNetwork(twoNodes, 2) with DistanceCutoffGameSV
+  val n = new WeightedDirectedNetwork(twoNodes, 1) with FringeGameSV
   "FringeGameSV" should "compute SV in simplest case" in {
+    n.computeSV() shouldEqual Map(1 -> 1.5, 2 -> 0.5)
   }
 }

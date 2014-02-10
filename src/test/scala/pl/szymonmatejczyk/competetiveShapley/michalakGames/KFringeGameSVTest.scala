@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.MichalakGames
+package pl.szymonmatejczyk.competetiveShapley.michalakGames
 
 import scala.language.postfixOps
 import org.scalatest._
