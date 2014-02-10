@@ -15,6 +15,11 @@ import com.typesafe.scalalogging.slf4j.Logging
 
 object SubgraphFromExtension extends Logging {
   val r = new Random
+  
+  /**
+   * Returns pseudo random subgraph of @param graph using BFS from 
+   * @param fromNode or a random node not bigger than @param size nodes.
+   */
   def randomSubgraph[N: Manifest, E[N] <: EdgeLikeIn[N]](graph: Graph[N, E], size: Int,
     fromNode: Option[N]): Graph[N, E] = {
     def getRandomNode(): graph.NodeT = {
