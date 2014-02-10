@@ -26,10 +26,6 @@ trait InfluenceAboveThresholdGameSV {
   
   def betas() : M = alphas(x => x * x)
   
-  def normalCDF(x : Double, mi : Double = 0.0, sigma : Double = 1.0) = {
-    0.5 * (1 + erf((x - mi)/ math.sqrt(2 * sigma)))
-  }
-  
   def computeSingleSV(node : Int, cutoff : M, alpha : M, beta : M) : Double = {
     var res = 0.0
     val inDegree = g.get(node).inDegree

@@ -10,15 +10,19 @@ object Erf {
   val a5: Double =  1.061405429;
   val p: Double  =  0.3275911;
 
-  def erf(x: Double): Double =  {
-        // Save the sign of x
-        val sign = if (x < 0) -1 else 1
-        val absx =  math.abs(x)
+  def erf(x: Double): Double = {
+    // Save the sign of x
+    val sign = if (x < 0) -1 else 1
+    val absx = math.abs(x)
 
-        // A&S formula 7.1.26, rational approximation of error function
-        val t = 1.0/(1.0 + p*absx);
-        val y = 1.0 - (((((a5*t + a4)*t) + a3)*t + a2)*t + a1)*t*math.exp(-x*x);
-        sign*y
-    }
+    // A&S formula 7.1.26, rational approximation of error function
+    val t = 1.0 / (1.0 + p * absx);
+    val y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * math.exp(-x * x);
+    sign * y
+  }
+  
+  def normalCDF(x : Double, mi : Double = 0.0, sigma : Double = 1.0) = {
+    0.5 * (1 + erf((x - mi) / math.sqrt(2) / sigma))
+  }
 }
 
