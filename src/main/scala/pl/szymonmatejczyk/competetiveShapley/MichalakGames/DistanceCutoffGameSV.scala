@@ -13,7 +13,7 @@ trait DistanceCutoffGameSV {
     def dist(i : Int, j : Int) = distMap(((i, j)))
     
     g.nodes.foreach {n => distMap += (((n.value, n.value), 0.0))}
-    g.edges.foreach {e => distMap += (((e._1.value, e._2.value), e.weight))}
+    g.edges.foreach {e => distMap += (((e._1.value, e._2.value), e.weight / weightDenominator))}
     g.nodes.foreach{
       k => g.nodes.foreach{
         i => g.nodes.foreach {

@@ -4,6 +4,10 @@ import scala.collection.mutable.HashSet
 import scala.collection.generic.MutableMapFactory
 import scala.collection.mutable.HashMap
 
+/**
+ * Failed to implement it this way. Use PIMap instead.
+ */
+@deprecated("Use PIMap instead.", "")
 trait PairIndexedMap[B] extends collection.mutable.Map[(Int, Int), B] {
   private val pairs = collection.mutable.HashMap[Int, (HashSet[Int], HashSet[Int])]().
     withDefault(_ => (HashSet(), HashSet()))
