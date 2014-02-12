@@ -1,6 +1,6 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
 
-import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
+import pl.szymonmatejczyk.competetiveShapley.InfluenceComputation
 
 trait GreedyTopKNodesSearch extends InfluenceComputation {
   def threshold: Double

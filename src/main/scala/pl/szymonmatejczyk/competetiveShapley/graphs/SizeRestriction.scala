@@ -1,11 +1,8 @@
-package pl.szymonmatejczyk.competetiveShapley
-
-import scalax.collection.Graph
+package pl.szymonmatejczyk.competetiveShapley.graphs
 import scalax.collection.GraphPredef._
 import scalax.collection.GraphEdge._
 import scalax.collection.edge.Implicits._
-import scalax.collection.edge.WDiEdge
-import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphFromExtension
+import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 
 trait SizeRestriction {
   self : InfluenceNetwork =>

@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.ldags
 
 import scala.collection._
 import scalax.collection.Graph
@@ -7,12 +7,11 @@ import scalax.collection.GraphEdge._
 import scalax.collection.edge.Implicits._
 import scalax.collection.edge.WDiEdge
 import scala.util.Random
-import scalax.collection.config.CoreConfig
 import scala.collection.mutable.HashMap
 import scalax.collection.GraphTraversal
-import scala.collection.immutable.Queue
 import com.typesafe.scalalogging.slf4j.Logging
 import pl.szymonmatejczyk.competetiveShapley.utils.Cache
+import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphVisitor
 
 trait LDAGApproximation extends Cache with Logging {
   val g: Graph[Int, WDiEdge]

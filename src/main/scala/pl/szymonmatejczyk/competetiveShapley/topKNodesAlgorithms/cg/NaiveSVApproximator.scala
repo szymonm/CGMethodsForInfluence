@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
 
 import scala.collection._
 import pl.szymonmatejczyk.competetiveShapley.utils.GeneratorOverIterator

@@ -1,8 +1,11 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.ldags
 
 import scala.collection._
-import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.CoalitionGenerator
 import scalax.collection.GraphTraversal
+import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphVisitor
+import scalax.collection.GraphTraversal.VisitorReturn.Continue
+import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphVisitor
 
 trait InfluenceNetworkLDAGApproximation {
   self: InfluenceNetwork =>

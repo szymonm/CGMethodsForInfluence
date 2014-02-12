@@ -3,6 +3,7 @@ package pl.szymonmatejczyk.competetiveShapley
 import pl.szymonmatejczyk.competetiveShapley.utils.GeneratorOverIterator
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.BanzhaffIndexApproximator
 
 class BanzhaffIndexApproximatorTest extends FlatSpec with ShouldMatchers {
   class SimpleGenerator {

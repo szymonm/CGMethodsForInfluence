@@ -1,8 +1,6 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
 
 import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
-import scala.collection.SortedMap
-import scala.collection.immutable.TreeMap
 
 class InfluenceAdditiveBICalculator {
   /**

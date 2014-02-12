@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.graphs
 
 import scala.collection._
 import scalax.collection.edge.WDiEdge

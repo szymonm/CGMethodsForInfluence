@@ -14,6 +14,7 @@ import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
 import com.typesafe.scalalogging.slf4j.Logging
 import scalax.collection.GraphTraversal
 import pl.szymonmatejczyk.competetiveShapley.utils.Cache
+import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphVisitor
 
 trait InfluenceComputation extends Cache with Logging {
   val r: Random
