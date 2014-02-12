@@ -20,7 +20,6 @@ import com.typesafe.scalalogging.slf4j.Logging
 import com.typesafe.scalalogging.slf4j.Logger
 import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
 import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.CoalitionGenerator
-import pl.szymonmatejczyk.competetiveShapley.utils.RandomDivisionSampler
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GMLFileReader
 import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGenerator
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
@@ -32,12 +31,20 @@ import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.InfluenceSVC
 import pl.szymonmatejczyk.competetiveShapley.ldags.InfluenceNetworkLDAGApproximation
 import pl.szymonmatejczyk.competetiveShapley.ldags.LDAGApproximation
 import pl.szymonmatejczyk.competetiveShapley.graphs.SizeRestriction
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
 
 class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightDenominator: Double = 100000.0)
       extends WeightedDirectedNetwork(g, weightDenominator)
-        with LiveGraph with Logging with GreedyTopKNodesSearch 
-        with InfluenceSVCalculator with LDAGApproximation with SizeRestriction 
-        with SingularInfluences with InfluenceNetworkLDAGApproximation with LDAGBanzhafIndex{
+        with LiveGraph 
+        with Logging 
+        with GreedyTopKNodesSearch 
+        with InfluenceSVCalculator 
+        with LDAGApproximation 
+        with SizeRestriction 
+        with SingularInfluences 
+        with InfluenceNetworkLDAGApproximation 
+        with LDAGBanzhafIndex
+        with DegreeDiscount {
     implicit val config = new CoreConfig()
   val r = new Random
   val DEFAULT_THRESHOLD = 0.3
@@ -94,5 +101,9 @@ object InfluenceNetwork extends Logging {
       InfluenceNetwork = {
     new InfluenceNetwork(GraphFromFileReader.read(filename, filetype, withWeights,
       WEIGHT_DENOMINATOR))
+  }
+  
+  def apply(wdn : WeightedDirectedNetwork) : InfluenceNetwork = {
+    new InfluenceNetwork(wdn.g, wdn.weightDenominator)
   }
 }

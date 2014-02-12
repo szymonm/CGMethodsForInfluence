@@ -14,7 +14,7 @@ class GeographicalThresholdGraphGenerator(theta: Double, alpha: Double = 2,
   extends GraphGenerator {
   val r = new Random
 
-  import pl.szymonmatejczyk.competetiveShapley.utils.RandomPowerLawExtension._
+  import pl.szymonmatejczyk.competetiveShapley.utils.random.RandomPowerLawExtension._
 
   override def generateGraph[N: Manifest](nodes: Seq[N]): Graph[N, WDiEdge] = {
     val positions: Map[N, (Double, Double)] = Map() ++ nodes.

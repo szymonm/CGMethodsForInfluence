@@ -10,7 +10,7 @@ import scala.io.Source
 import java.io.IOException
 import com.typesafe.scalalogging.slf4j.Logging
 import scala.collection.mutable.ListBuffer
-import pl.szymonmatejczyk.competetiveShapley.utils.RandomDivisionSampler
+import pl.szymonmatejczyk.competetiveShapley.utils.random.RandomDivisionSampler
 
 trait GraphFromFileReader extends Logging {
 

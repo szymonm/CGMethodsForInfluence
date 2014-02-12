@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.utils
+package pl.szymonmatejczyk.competetiveShapley.utils.random
 
 import scala.util.Random
 
