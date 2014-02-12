@@ -27,7 +27,7 @@ trait DegreeDiscount {
         DDPriorityQueue += node
     }
     
-    val res = mutable.Set[Int]()
+    val res = mutable.ListBuffer[Int]()
     
     while (res.size < k) {
       val current = DDPriorityQueue.dequeue()
@@ -38,10 +38,8 @@ trait DegreeDiscount {
         res += current
         current.inNeighbors.foreach {
           neighbour =>
-            if (!res.contains(neighbour)) {
               discountedDegree += ((neighbour, discountedDegree(neighbour) - 1))
               outdatedPosition += neighbour
-            }
         }
       }
     }
