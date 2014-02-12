@@ -20,20 +20,27 @@ object WeightedDirectedNetwork {
     new WeightedDirectedNetwork(Graph(1 ~> 2 % edgeWeight), edgeDenominator)
   
   def starOut(nodesNum : Int, edgeWeight : Int, edgeDenominator : Int) : WeightedDirectedNetwork = {
-    val nodes = 1.until(nodesNum)
-    val edges = 2.until(nodesNum).map(x => 1 ~> x % edgeWeight).toIterable
+    val nodes = 1.to(nodesNum)
+    val edges = 2.to(nodesNum).map(x => 1 ~> x % edgeWeight).toIterable
     from(nodes, edges, edgeDenominator)
   }
   
   def starIn(nodesNum : Int, edgeWeight : Int, edgeDenominator : Int) : WeightedDirectedNetwork = {
-    val nodes = 1.until(nodesNum)
-    val edges = 2.until(nodesNum).map(x => x ~> 1 % edgeWeight).toIterable
+    val nodes = 1.to(nodesNum)
+    val edges = 2.to(nodesNum).map(x => x ~> 1 % edgeWeight).toIterable
     from(nodes, edges, edgeDenominator)
   }
   
   def cycle(n : Int, edgeWeight : Int, edgeDenominator : Int) : WeightedDirectedNetwork = {
-    val nodes = 1.until(n)
+    val nodes = 1.to(n)
     val edges = nodes.map(x => x ~> ((x % n) + 1) % edgeWeight).toIterable
+    from(nodes, edges, edgeDenominator)
+  }
+  
+  def clique(n : Int, edgeWeight : Int, edgeDenominator : Int) : WeightedDirectedNetwork = {
+    val nodes = 1.to(n)
+    val edges = nodes.combinations(2).flatMap{case x +: y +: Seq() => 
+      List(x ~> y % edgeWeight, y ~> x % edgeWeight)}.toIterable
     from(nodes, edges, edgeDenominator)
   }
 }

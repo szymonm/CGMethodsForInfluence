@@ -1,0 +1,35 @@
+package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
+import org.scalatest.FlatSpec
+import org.scalatest.matchers.ShouldMatchers
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
+import scala.util.Random
+import scalax.collection.Graph
+import scalax.collection.GraphPredef._
+import scalax.collection.GraphEdge._
+import scalax.collection.edge.Implicits._
+import scalax.collection.edge.WDiEdge
+
+import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
+import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+
+@RunWith(classOf[JUnitRunner])
+class DegreeDiscountTest extends FlatSpec with ShouldMatchers {
+
+  "DegreeDiscount" should "return center node of a star" in {
+    val starOut = WeightedDirectedNetwork.starOut(5, 1, 1)
+    val network = InfluenceNetwork(starOut)
+    network.computeTokKNodesDD(1) shouldEqual Seq(1)
+  }
+  
+  it should "return only one node of a clique" in {
+    val clique = WeightedDirectedNetwork.clique(3, 1, 1)
+    val e1 = 1 ~> 4 % 1
+    val e2 = 4 ~> 5 % 1
+    val e4 = 2 ~> 5 % 1
+    val e5 = 1 ~> 5 % 1
+    val network = new InfluenceNetwork(clique.g + e1 + e2 + e5 + e4, 1)
+    network.computeTokKNodesDD(3) shouldEqual Seq(1, 2, 4)
+  }
+
+}
