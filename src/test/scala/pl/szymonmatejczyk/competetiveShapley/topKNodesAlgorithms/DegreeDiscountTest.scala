@@ -24,12 +24,9 @@ class DegreeDiscountTest extends FlatSpec with ShouldMatchers {
   
   it should "return only one node of a clique" in {
     val clique = WeightedDirectedNetwork.clique(3, 1, 1)
-    val e1 = 1 ~> 4 % 1
-    val e2 = 4 ~> 5 % 1
-    val e4 = 2 ~> 5 % 1
-    val e5 = 1 ~> 5 % 1
-    val network = new InfluenceNetwork(clique.g + e1 + e2 + e5 + e4, 1)
+    val edges = List(1 ~> 4 % 1, 4 ~> 5 % 1 ,2 ~> 5 % 1,
+                     1 ~> 5 % 1)
+    val network = new InfluenceNetwork(clique.g ++ edges, 1)
     network.computeTokKNodesDD(3) shouldEqual Seq(1, 2, 4)
   }
-
 }
