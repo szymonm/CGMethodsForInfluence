@@ -9,7 +9,6 @@ import scalax.collection.edge.Implicits._
 import scala.io.Source
 import com.typesafe.scalalogging.slf4j.Logging
 import scala.collection.mutable.ListBuffer
-import pl.szymonmatejczyk.competetiveShapley.utils.RandomDivisionSampler
 
 class TXTFileReader extends GraphFromFileReader with Logging {
   val EdgePat = """\s*(\d+)\s+(\d+)""".r

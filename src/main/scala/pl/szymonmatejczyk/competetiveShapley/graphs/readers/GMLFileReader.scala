@@ -11,7 +11,6 @@ import scala.io.Source
 import java.io.IOException
 import com.typesafe.scalalogging.slf4j.Logging
 import scala.collection.mutable.ListBuffer
-import pl.szymonmatejczyk.competetiveShapley.utils.RandomDivisionSampler
 
 class GMLFileReader extends GraphFromFileReader with Logging {
   val EdgePat = """(\s*edge)""".r
