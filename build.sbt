@@ -6,7 +6,7 @@ scalaVersion := "2.10.2"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
-libraryDependencies += "com.assembla.scala-incubator" % "graph-core_2.10" % "1.7.1"
+libraryDependencies += "com.assembla.scala-incubator" % "graph-core_2.10" % "1.7.3"
 
 libraryDependencies += "org.scalatest" % "scalatest_2.10" % "1.9.2" % "test"
 
