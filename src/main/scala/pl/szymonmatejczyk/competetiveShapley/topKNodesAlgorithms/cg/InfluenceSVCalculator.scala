@@ -5,7 +5,6 @@ import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGene
 import scalax.collection.Graph
 import scalax.collection.edge.WDiEdge
 import pl.szymonmatejczyk.competetiveShapley.InfluenceComputation
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.NaiveSVApproximator
 import scalax.collection.GraphPredef.graphParamsToPartition
 
 trait InfluenceSVCalculator extends InfluenceComputation with NaiveSVApproximator {
