@@ -37,7 +37,8 @@ trait LiveGraph {
    * Returns nodes that become reachable when adding q to initial seed when visited
    * are already visited.
    */
-  def reachableFromQueue(q : immutable.Queue[g.NodeT], visited : immutable.Set[Int]) : Set[Int] = {
+  def randomlyReachableFromQueue(q : immutable.Queue[g.NodeT], visited : Set[Int]) : 
+      Set[Int] = {
     val added = mutable.Set[Int]()
     val queue = mutable.Queue() ++ q
     while (!queue.isEmpty) {
@@ -58,30 +59,19 @@ trait LiveGraph {
       (Set[Int], Seq[Set[Int]]) = {
     val q = immutable.Queue[g.NodeT]() ++ startSet.map { x => g.find(x) }.flatten
     val visited = immutable.Set[Int]() ++ startSet.toIterable
-    val added = reachableFromQueue(q, visited)
+    val added = randomlyReachableFromQueue(q, visited)
     val initiallyReachable = Set[Int]() ++ visited ++ added
     val additionalSets = additionalNodes.map{
       node => 
-        reachableFromQueue(immutable.Queue(g.get(node)), visited)
+        randomlyReachableFromQueue(immutable.Queue(g.get(node)), visited)
     }
     (initiallyReachable, additionalSets)
   } 
-
   
   def mcSpreadFrom(influenceSet : Set[Int]) : Future[Int] = {
     future {
       randomLiveGraphFrom(influenceSet).size
     }
-  }
-  
-  def mcIncrementallyReachable(startSet : Set[Int], additionalNodes : Seq[Int], n : Int) :
-    Future[Seq[Double]] =  future {
-    val (sum, seqSums) = Iterator.range(0, n).map(_ => {
-      val (set, seq) = incrementallyReachableNodes(startSet, additionalNodes)
-      (set.size, seq.map(_.size))
-      }).foldLeft((0, Seq[Int]())){ case (x, y) => (x._1 + y._1, x._2.zip(y._2).
-          map{case (a,b) => a + b})}
-    Seq(sum.toDouble / n) ++ seqSums.map(_.toDouble / n)
   }
   
   def mcSpreadingFrom(influenceSet : Set[Int], n : Int) : Future[Double] = {

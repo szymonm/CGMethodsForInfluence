@@ -11,7 +11,8 @@ trait CelfPlusPlus {
     
   val AWAIT_TIME = 1.second
 
-  case class NodeRecord(var mg1 : Double, prevBest : Option[g.NodeT], mg2 : Double, var flag : Int = 0)
+  case class NodeRecord(var mg1 : Double, prevBest : Option[g.NodeT], mg2 : Double, 
+                        var flag : Int = 0)
   
   /*
    * If curBest is None returns influence spread of node given seed is already influenced.
@@ -23,13 +24,9 @@ trait CelfPlusPlus {
       (Double, Double) = {
     curBest match {
       case Some(bestNode) => 
-        val f = mcIncrementallyReachable(seed.view.map(_.value).toSet, Seq(bestNode), MCRuns)
-        ???
-        Await.result(f, AWAIT_TIME) match {
-          case withOutBest +: withBest +: Seq() => (withOutBest, withBest) 
-        }
-      case None => (Await.result(mcSpreadingFrom(seed.view.map(_.value).toSet, MCRuns), 
-          AWAIT_TIME), 0.0)
+        val r = mcTotalInfluence(seed.toSet, Seq(Seq(node), Seq(bestNode, node)), MCRuns)
+        (r(0), r(1))
+      case None => (mcTotalInfluence(seed.toSet, Seq(Seq(node)), MCRuns)(0), 0.0)
     }
   }
   
@@ -37,12 +34,11 @@ trait CelfPlusPlus {
     : (Double, Double) = {
     curBest match {
       case Some(bestNode) =>
-        val f1 = mcIncrementallyReachable(seed.view.map(_.value).toSet, Seq(node.value), MCRuns)
-        val f2 = mcIncrementallyReachable(seed.view.map(_.value).toSet, Seq(bestNode.value, 
-            node.value), MCRuns)
-        ???
+        val r = mcIncrementalInfluence(seed.toSet, Seq(Seq(node), Seq(bestNode, node)), MCRuns)
+        (r(0), r(1))
+      case None =>
+        (mcIncrementalInfluence(seed.toSet, Seq(Seq(node)), MCRuns)(0), 0.0)
     }
-    ???
   } 
   
   def computeTopKCpp(k : Int, MCRuns : Int = 10000) : Seq[Int] = {

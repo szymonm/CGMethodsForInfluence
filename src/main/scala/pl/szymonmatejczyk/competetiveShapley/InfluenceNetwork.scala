@@ -35,7 +35,8 @@ import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
 
 class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightDenominator: Double = 100000.0)
       extends WeightedDirectedNetwork(g, weightDenominator)
-        with LiveGraph 
+        with LiveGraph
+        with IncrementalInfluence
         with Logging 
         with GreedyTopKNodesSearch 
         with InfluenceSVCalculator 
