@@ -2,7 +2,6 @@ package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
 
 import scala.collection._
 import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.CoalitionGenerator
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.BanzhaffIndexApproximator
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import scalax.collection.GraphPredef.graphParamsToPartition
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork

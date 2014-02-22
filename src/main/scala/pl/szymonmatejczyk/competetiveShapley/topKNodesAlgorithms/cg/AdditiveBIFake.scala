@@ -1,6 +1,5 @@
 package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
 
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.InfluenceAdditiveBICalculator
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 
 trait AdditiveBIFake {
