@@ -1,5 +1,6 @@
 package pl.szymonmatejczyk.competetiveShapley
 
+import collection._
 import scala.collection.mutable.PriorityQueue
 import scala.collection.immutable.SortedSet
 

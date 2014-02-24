@@ -1,13 +1,16 @@
 package pl.szymonmatejczyk.competetiveShapley.michalakGames
 
 import scala.collection._
-import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import scalax.collection.GraphPredef.graphParamsToPartition
+
+import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
+import pl.szymonmatejczyk.competetiveShapley._
+import pl.szymonmatejczyk.competetiveShapley.common._
 
 trait FringeGameSV {
   self : WeightedDirectedNetwork =>
   
-  def computeSV() : Map[Int, Double] = {
+  def computeFringeGameSV() : Map[Int, Double] = {
     g.nodes.toOuterNodes.par.map{x => (x, computeSingleSV(x))}.toMap.seq
   }
   
@@ -17,4 +20,9 @@ trait FringeGameSV {
     val n = g.get(node)
     n.diSuccessors.view.map{x => degreeFactor(x.inDegree)}.sum + degreeFactor(n.inDegree)
   }
+}
+
+object FringeGameSV {
+  def influenceHeuristic : InfluenceHeuristic = new InfluenceHeuristic("fringeGame", (in : IN) => 
+    (k : Int) => topKFromMap[Int](k, in.computeFringeGameSV()))
 }

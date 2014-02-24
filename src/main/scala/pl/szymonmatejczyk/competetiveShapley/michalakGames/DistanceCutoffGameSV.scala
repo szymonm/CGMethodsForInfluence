@@ -4,6 +4,8 @@ import scala.collection._
 import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import scalax.collection.GraphPredef.graphParamsToPartition
 import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
+import pl.szymonmatejczyk.competetiveShapley._
+import pl.szymonmatejczyk.competetiveShapley.common._
 
 trait DistanceCutoffGameSV {
   self : WeightedDirectedNetwork =>
@@ -26,7 +28,7 @@ trait DistanceCutoffGameSV {
     distMap
   }
   
-  def computeSV(cutoff : Double) : Map[Int, Double] = {
+  def computeDistanceCutoffSV(cutoff : Double) : Map[Int, Double] = {
     val distances = floydWarshall()
     g.nodes.toOuterNodes.map{x => 
       (x, computeSingleSV(x, cutoff, distances, extInDegreeMap(distances, cutoff)))}.toMap
@@ -48,4 +50,9 @@ trait DistanceCutoffGameSV {
     distances.byFirstIterator(node).filter{_._2 <= cutoff}.map{
       x => degreeFactor(extInDegreeMap(x._1._2))}.sum
   }
+}
+
+object DistanceCutoffGameSV {
+  def influenceHeuristic(cutoff : Double) : InfluenceHeuristic = new InfluenceHeuristic("distanceCutoff", 
+      (in : IN) => (k : Int) => topKFromMap[Int](k, in.computeDistanceCutoffSV(cutoff)))
 }

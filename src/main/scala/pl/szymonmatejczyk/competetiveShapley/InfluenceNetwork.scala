@@ -35,6 +35,10 @@ import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.CelfPlusPlus
 import pl.szymonmatejczyk.competetiveShapley.liveGraphs.LiveGraph
 import pl.szymonmatejczyk.competetiveShapley.liveGraphs.IncrementalInfluence
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.FringeGameSV
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.DistanceCutoffGameSV
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.InfluenceAboveThresholdGameSV
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.KFringeGameSV
 
 class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightDenominator: Double = 100000.0)
       extends WeightedDirectedNetwork(g, weightDenominator)
@@ -49,7 +53,11 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
         with InfluenceNetworkLDAGApproximation 
         with LDAGBanzhafIndex
         with DegreeDiscount
-        with CelfPlusPlus {
+        with CelfPlusPlus
+        with FringeGameSV
+        with DistanceCutoffGameSV
+        with InfluenceAboveThresholdGameSV 
+        with KFringeGameSV {
     implicit val config = new CoreConfig()
   val r = new Random
   val DEFAULT_THRESHOLD = 0.3

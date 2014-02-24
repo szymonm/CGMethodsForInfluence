@@ -8,7 +8,8 @@ import scalax.collection.edge.Implicits._
 
 import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import pl.szymonmatejczyk.competetiveShapley.utils.math.Erf._
-
+import pl.szymonmatejczyk.competetiveShapley._
+import pl.szymonmatejczyk.competetiveShapley.common._
 
 trait InfluenceAboveThresholdGameSV {
   self : WeightedDirectedNetwork => 
@@ -56,10 +57,16 @@ trait InfluenceAboveThresholdGameSV {
     res
   }
   
-  def computeSV(cutoff : Function1[Int, Double]) : Map[Int, Double] = {
+  def computeInfluenceAboveThresholdGameSV(cutoff : Function1[Int, Double]) : Map[Int, Double] = {
     val alpha = alphas()
     val beta = betas()
     
     g.nodes.toOuterNodes.par.map{x => (x, computeSingleSV(x, cutoff, alpha, beta))}.toMap.seq
   }
+}
+
+object InfluenceAboveThresholdGameSV {
+  def influenceHeuristic(cutoff : Double) = new InfluenceHeuristic("influenceAboveThreshold", 
+      (in : IN) => (k : Int) => topKFromMap[Int](k, 
+          in.computeInfluenceAboveThresholdGameSV(_ => cutoff)))
 }

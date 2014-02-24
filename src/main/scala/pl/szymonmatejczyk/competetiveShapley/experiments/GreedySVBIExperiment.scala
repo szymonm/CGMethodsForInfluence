@@ -14,8 +14,20 @@ import pl.szymonmatejczyk.competetiveShapley.randomGraphs.ErdosRandomGraphGenera
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GraphGenerator
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GeographicalThresholdGraphGenerator
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import pl.szymonmatejczyk.competetiveShapley.common._
+import pl.szymonmatejczyk.competetiveShapley._
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.FringeGameSV
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.DistanceCutoffGameSV
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.InfluenceAboveThresholdGameSV
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.DistanceCutoffGameSV
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.KFringeGameSV
 
 object GreedySVBIExperiment extends App with Logging {
+  val heapSize = Runtime.getRuntime().maxMemory();
+
+  if (heapSize < 198974848)
+    logger.warn(s"Max heap size($heapSize) may be to small.")
+    
   val WEIGHT_DENOMINATOR = 10000L
   val MAX_GRAPH_SIZE = 500
 
@@ -35,26 +47,37 @@ object GreedySVBIExperiment extends App with Logging {
     new InfluenceNetwork(generator.generateGraph(1 to size)))
 
   val TXT_PATH = "../graphs/txt/"
-  val cases = Iterable( //new DataCase("football", "../graphs/gml/football.gml", GML),
-    //    new DataCase("dolphins", "../graphs/gml/dolphins.gml", GML),
-    //    new DataCase("polbooks", "../graphs/gml/polbooks.gml", GML),
-    //    new DataCase("lesmiserables", "../graphs/gml/lesmiserables[W].gml", GML, true),
-    new DataCase("amazon", TXT_PATH + "amazon0302.txt", TXT),
-    new DataCase("p2pGnutella", TXT_PATH + "p2p-Gnutella04.txt", TXT),
+  val cases = Iterable(new DataCase("football", "../graphs/gml/football.gml", GML),
+        new DataCase("dolphins", "../graphs/gml/dolphins.gml", GML),
+        new DataCase("polbooks", "../graphs/gml/polbooks.gml", GML),
+        new DataCase("lesmiserables", "../graphs/gml/lesmiserables[W].gml", GML, true),
+        new DataCase("amazon", TXT_PATH + "amazon0302.txt", TXT),
+        new DataCase("p2pGnutella", TXT_PATH + "p2p-Gnutella04.txt", TXT),
     //        new DataCase("Slashdot", TXT_PATH + "Slashdot081106.txt", TXT),
-    new DataCase("web-stanford", TXT_PATH + "web-Stanford.txt", TXT),
-    new DataCase("wiki-Vote", TXT_PATH + "wiki-Vote.txt", TXT),
-    new DataCase("email-Enron", TXT_PATH + "email-Enron.txt", TXT),
+//    new DataCase("web-stanford", TXT_PATH + "web-Stanford.txt", TXT),
+//    new DataCase("wiki-Vote", TXT_PATH + "wiki-Vote.txt", TXT),
+//    new DataCase("email-Enron", TXT_PATH + "email-Enron.txt", TXT),
     //    new DataCase("simple.txt", TXT_PATH + "simple.txt", TXT),
     //    new GeneratedCase(new GeographicalThresholdGraphGenerator(0.9), 100),
-    new GeneratedCase(new ErdosRandomGraphGenerator(0.3), 200),
+//    new GeneratedCase(new ErdosRandomGraphGenerator(0.3), 200),
     new DataCase("oregon1_010331.txt", TXT_PATH + "oregon1_010331.txt", TXT))
 
-  val heapSize = Runtime.getRuntime().maxMemory();
-
-  if (heapSize < 198974848)
-    logger.warn(s"Max heap size($heapSize) may be to small.")
-
+  import pl.szymonmatejczyk.competetiveShapley.common._
+  
+  type IN = InfluenceNetwork
+  val heuristics = Iterable(
+      new InfluenceHeuristic("greedyLdag", (in : IN) => (k : Int) => 
+        in.greedyMostInfluentSearch(k, Some(LDAG_THRESHOLD))),
+      new InfluenceHeuristic("ldagBI", (in : IN) => (k : Int) => 
+        in.computeBIRanking(LDAG_THRESHOLD, BISV_ITER_NO).take(k).map(_._1)),
+      new InfluenceHeuristic("ldagSV", (in : IN) => (k : Int) => in.computeSVRanking(BISV_ITER_NO,
+          LDAG_THRESHOLD).take(k).map(_._1)),
+      FringeGameSV.influenceHeuristic,
+      KFringeGameSV.influenceHeuristic(3),
+      DistanceCutoffGameSV.influenceHeuristic(1.0),
+      InfluenceAboveThresholdGameSV.influenceHeuristic(1.0)
+      )
+  
   class TestResult(val caseName: String, val seedSize: Int, val greedy: Double, val bi: Double,
     val sv: Double)
   val results = ListBuffer[TestResult]()
