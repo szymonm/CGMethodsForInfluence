@@ -11,6 +11,7 @@ import ExecutionContext.Implicits.global
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import pl.szymonmatejczyk.competetiveShapley.utils.FutureExtensions.FutureCompanionOps
 import scala.Option.option2Iterable
+import pl.szymonmatejczyk.competetiveShapley.utils.FutureExtensions
 
 trait LiveGraph {
   self : InfluenceNetwork => 

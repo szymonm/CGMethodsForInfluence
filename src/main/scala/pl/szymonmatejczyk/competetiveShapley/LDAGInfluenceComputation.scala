@@ -94,11 +94,11 @@ trait InfluenceComputation extends Cache with Logging {
                 true, true)(e.toEdgeIn)
             })(
               nodeVisitor = _ => GraphTraversal.VisitorReturn.Continue,
-              edgeVisitor = e => {
+              edgeVisitor = (e => {
                 debug("first phase edge: " + e)
                 deltaInfluence += (e._1.value) -> (deltaInfluence(e._1.value) +
                   e.weight / weightDenominator * deltaInfluence(e._2.value))
-              })
+              }))
           // 21
           g.get(addedNode).traverse(direction = GraphTraversal.Predecessors, breadthFirst = true,
             edgeFilter = { e: g.EdgeT =>
