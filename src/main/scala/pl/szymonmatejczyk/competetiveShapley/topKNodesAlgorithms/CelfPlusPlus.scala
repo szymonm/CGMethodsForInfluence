@@ -13,7 +13,7 @@ trait CelfPlusPlus {
 
   case class NodeRecord(var mg1 : Double, prevBest : Option[g.NodeT], mg2 : Double, 
                         var flag : Int = 0)
-  
+
   /*
    * If curBest is None returns influence spread of node given seed is already influenced.
    * 

@@ -1,16 +1,16 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.liveGraphs
 
 import collection._
 import scalax.collection.Graph
 import scalax.collection.GraphPredef._
 import scalax.collection.GraphEdge._
 import scalax.collection.edge.Implicits._
-import scalax.collection.edge.WDiEdge
-import scala.util.Random
 import scalax.collection.config.CoreConfig
 import scala.concurrent._
 import ExecutionContext.Implicits.global
-import pl.szymonmatejczyk.competetiveShapley.utils.FutureExtensions
+import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import pl.szymonmatejczyk.competetiveShapley.utils.FutureExtensions.FutureCompanionOps
+import scala.Option.option2Iterable
 
 trait LiveGraph {
   self : InfluenceNetwork => 

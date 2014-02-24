@@ -32,6 +32,9 @@ import pl.szymonmatejczyk.competetiveShapley.ldags.InfluenceNetworkLDAGApproxima
 import pl.szymonmatejczyk.competetiveShapley.ldags.LDAGApproximation
 import pl.szymonmatejczyk.competetiveShapley.graphs.SizeRestriction
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.CelfPlusPlus
+import pl.szymonmatejczyk.competetiveShapley.liveGraphs.LiveGraph
+import pl.szymonmatejczyk.competetiveShapley.liveGraphs.IncrementalInfluence
 
 class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightDenominator: Double = 100000.0)
       extends WeightedDirectedNetwork(g, weightDenominator)
@@ -45,7 +48,8 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
         with SingularInfluences 
         with InfluenceNetworkLDAGApproximation 
         with LDAGBanzhafIndex
-        with DegreeDiscount {
+        with DegreeDiscount
+        with CelfPlusPlus {
     implicit val config = new CoreConfig()
   val r = new Random
   val DEFAULT_THRESHOLD = 0.3

@@ -1,7 +1,8 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.liveGraphs
 
 import scala.collection._
 import scala.concurrent._
+import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 
 trait IncrementalInfluence extends LiveGraph {
   self : InfluenceNetwork =>
