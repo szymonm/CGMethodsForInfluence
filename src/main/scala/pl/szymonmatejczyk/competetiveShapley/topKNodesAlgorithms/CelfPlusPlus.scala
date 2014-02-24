@@ -5,8 +5,9 @@ import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration._
+import com.typesafe.scalalogging.slf4j.Logging
 
-trait CelfPlusPlus {
+trait CelfPlusPlus extends Logging {
   self : InfluenceNetwork =>
     
   val AWAIT_TIME = 1.second
@@ -54,7 +55,7 @@ trait CelfPlusPlus {
     
     def updateCurBest(newBest : Double, newNode : g.NodeT) {
       curBest = curBest match {
-        case Some(value) if (value < newBest) => Some(newNode)
+        case Some(oldBest) if (records(oldBest).mg1 < newBest) => Some(newNode)
         case _ => curBest
       }
     }
@@ -69,7 +70,9 @@ trait CelfPlusPlus {
     
     while (seedSet.size < k) {
       val current = priorityQueue.dequeue()
+      logger.info(s"Taking ${current.value}")
       if (records(current).flag == seedSet.size) {
+        logger.info(s"Adding to seed set")
         seedSet += current
         lastSeed = Some(current)
       } else {
