@@ -41,7 +41,7 @@ trait LiveGraph {
   def randomlyReachableFromQueue(q : immutable.Queue[g.NodeT], visited : Set[Int]) : 
       Set[Int] = {
     val added = mutable.Set[Int]()
-    val queue = mutable.Queue() ++ q
+    val queue = mutable.Queue() ++ q.filterNot(visited.contains(_))
     while (!queue.isEmpty) {
       val cur = queue.dequeue
       cur.outgoing.foreach {

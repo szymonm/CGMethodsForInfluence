@@ -25,7 +25,7 @@ trait IncrementalInfluence extends LiveGraph {
                       additionalNodeSeqs : Seq[Seq[g.NodeT]]) : Seq[Influence] = {
     val initiallyVisited = randomlyReachableFromQueue(immutable.Queue() ++ seed, Set[Int]())
     additionalNodeSeqs.map{
-      case last +: Seq() => 
+      case last +: Seq() =>
         val incrementalInfluence = randomlyReachableFromQueue(immutable.Queue(last), 
                                                               initiallyVisited).size
         (initiallyVisited.size + incrementalInfluence, incrementalInfluence)

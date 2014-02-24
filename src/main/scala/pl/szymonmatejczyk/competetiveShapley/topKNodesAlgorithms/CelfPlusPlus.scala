@@ -46,9 +46,9 @@ trait CelfPlusPlus extends Logging {
     val seedSet = mutable.ListBuffer[g.NodeT]()
     val records = mutable.Map[g.NodeT, NodeRecord]()
     
-    implicit val nodesOrdering : Ordering[g.NodeT] = 
+    val nodesOrdering : Ordering[g.NodeT] = 
       Ordering.by[g.NodeT, Double](n => records(n).mg1)
-    val priorityQueue = mutable.Queue[g.NodeT]()
+    val priorityQueue = new mutable.PriorityQueue[g.NodeT]()(nodesOrdering)
     
     var lastSeed : Option[g.NodeT] = None
     var curBest : Option[g.NodeT] = None
@@ -63,6 +63,7 @@ trait CelfPlusPlus extends Logging {
     g.nodes.foreach{
       node => 
         val (mg1, mg2) = sigma(node, curBest, seedSet, MCRuns)
+        logger.debug(s"${node.value} mgs: $mg1 $mg2")
         records += ((node, new NodeRecord(mg1, curBest, mg2, 0)))
         priorityQueue += node
         updateCurBest(mg1, node)
@@ -72,7 +73,7 @@ trait CelfPlusPlus extends Logging {
       val current = priorityQueue.dequeue()
       logger.info(s"Taking ${current.value}")
       if (records(current).flag == seedSet.size) {
-        logger.info(s"Adding to seed set")
+        logger.debug(s"Adding to seed set")
         seedSet += current
         lastSeed = Some(current)
       } else {
@@ -83,6 +84,8 @@ trait CelfPlusPlus extends Logging {
           val (mg1, mg2) = delta(current, curBest, seedSet, MCRuns)
           records += ((current, new NodeRecord(mg1, curBest, mg2, seedSet.size)))
         }
+        logger.info(s"${current.value} mgs: ${records(current).mg1} ${records(current).mg2}")
+        updateCurBest(records(current).mg1, current)
         priorityQueue += current
       }
       
