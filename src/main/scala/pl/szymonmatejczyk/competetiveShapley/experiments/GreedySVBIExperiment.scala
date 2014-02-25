@@ -34,7 +34,7 @@ object GreedySVBIExperiment extends App with Logging {
 
   val LDAG_THRESHOLD = 1.0 / 320.0
 
-  val BISV_ITER_NO = 20
+  val BISV_ITER_NO = 100
 
   class ExperimentCase(val name: String, val network: InfluenceNetwork)
 
