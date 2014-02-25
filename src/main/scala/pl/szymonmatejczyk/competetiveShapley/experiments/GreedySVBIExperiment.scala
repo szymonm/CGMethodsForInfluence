@@ -2,9 +2,12 @@ package pl.szymonmatejczyk.competetiveShapley.experiments
 
 import java.io.PrintWriter
 import java.io.File
+import java.nio.file.{Path, Paths, Files}
 import scala.collection._
 import scala.collection.mutable.ListBuffer
 import com.typesafe.scalalogging.slf4j.Logging
+import scala.pickling._
+import json._
 import pl.szymonmatejczyk.competetiveShapley.utils._
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils.time
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader._
@@ -22,9 +25,11 @@ import pl.szymonmatejczyk.competetiveShapley.michalakGames.InfluenceAboveThresho
 import pl.szymonmatejczyk.competetiveShapley.michalakGames.DistanceCutoffGameSV
 import pl.szymonmatejczyk.competetiveShapley.michalakGames.KFringeGameSV
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.CelfPlusPlus
+import java.net.InetAddress
 
 object GreedySVBIExperiment extends App with Logging {
-  val heapSize = Runtime.getRuntime().maxMemory();
+  val heapSize = java.lang.Runtime.getRuntime().maxMemory();
+  val hostname = InetAddress.getLocalHost().getHostName()
 
   if (heapSize < 198974848)
     logger.warn(s"Max heap size($heapSize) may be to small.")
@@ -35,6 +40,10 @@ object GreedySVBIExperiment extends App with Logging {
   val LDAG_THRESHOLD = 1.0 / 320.0
 
   val BISV_ITER_NO = 1000
+  
+  val resultsDirectory = if (args.size > 0) args(0) else s"results$hostname"
+  val resultsDirectoryPath = Paths.get(resultsDirectory)
+  Files.createDirectory(resultsDirectoryPath, null)
 
   class ExperimentCase(val name: String, val network: InfluenceNetwork)
 
@@ -110,6 +119,14 @@ object GreedySVBIExperiment extends App with Logging {
     }
     
     results += new TestResult(data.name, seedSize, values)
+    persistResults(results.toList, s"$resultsDirectory/PersistedResults.json")
+  }
+  
+  def persistResults(results : List[TestResult], filename : String) {
+    val pickled = results.pickle
+    val writer = new PrintWriter(new File(filename))
+    writer.print(pickled)
+    writer.close()
   }
 
   for (
@@ -128,7 +145,7 @@ object GreedySVBIExperiment extends App with Logging {
   val resultsByName = results.groupBy(_.caseName)
   resultsByName.foreach {
     case (caseName, results) =>
-      val writer = new PrintWriter(new File("results/" + caseName.replace(".", "_") + ".res"))
+      val writer = new PrintWriter(new File(s"$resultsDirectory/${caseName.replace(".", "_")}.res"))
       def print(x: Any) {
         writer.print(x)
       }
