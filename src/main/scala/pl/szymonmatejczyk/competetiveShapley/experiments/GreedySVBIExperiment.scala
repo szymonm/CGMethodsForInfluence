@@ -34,7 +34,7 @@ object GreedySVBIExperiment extends App with Logging {
 
   val LDAG_THRESHOLD = 1.0 / 320.0
 
-  val BISV_ITER_NO = 100
+  val BISV_ITER_NO = 1000
 
   class ExperimentCase(val name: String, val network: InfluenceNetwork)
 
@@ -88,7 +88,7 @@ object GreedySVBIExperiment extends App with Logging {
   val results = ListBuffer[TestResult]()
 
   def performExperiment(data: ExperimentCase, seedSize: Int) {
-    println("Data: " + data.name + " Seed size: " + seedSize + "%")
+    println("Data: " + data.name + " Seed size: " + seedSize)
     val values = mutable.Map[String, TestValue]()
     
     logger.info(s"Testing greedy")
@@ -136,7 +136,7 @@ object GreedySVBIExperiment extends App with Logging {
         writer.println()
       }
 
-      print("seedSize (%)")
+      print("seedSize")
       results.foreach {
         x => print("\t" + x.seedSize)
       }
@@ -144,7 +144,7 @@ object GreedySVBIExperiment extends App with Logging {
       for (heuristic <- (greedyLDAGHeuristic :: heuristics)) {
         print(heuristic._1)
         results.foreach {
-          x => print("\t" + x.values(heuristic._1))
+          x => print("\t" + x.values.getOrElse(heuristic._1, 0.0))
         }
       }
       writer.close()
