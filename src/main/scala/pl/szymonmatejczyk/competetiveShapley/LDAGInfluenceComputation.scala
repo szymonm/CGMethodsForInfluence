@@ -27,8 +27,6 @@ trait InfluenceComputation extends Cache with Logging {
 
   var ldagNodes: mutable.Map[Int, immutable.Map[Int, Int]]
 
-  def debug(s: Any)
-
   var currentInfluences: PIMap[Int, Double] = null
   var incrementalInfluence: collection.mutable.Map[Int, Double] = null
   // Map: (LDAG, node) -> probability
@@ -71,21 +69,21 @@ trait InfluenceComputation extends Cache with Logging {
       node =>
         addInfluenceNode(node)
     }
-    debug("AP")
-    debug(activationProbability)
+    logger.debug("AP")
+    logger.debug(activationProbability.toString)
     computeTotalInfluenceFromActivationProbabilities()
   }
 
   def addInfluenceNode(addedNode: Int) {
-    debug("Added node: " + addedNode)
+    logger.debug("Added node: " + addedNode)
     currentInfluences.byFirstIterator(addedNode).foreach {
       case ((`addedNode`, to), value) => // to = v
         if (!currentInitialSet.contains(to)) {
-          debug("LDAG: " + to + ":" + ldagNodes(to).mkString(";"))
+          logger.debug("LDAG: " + to + ":" + ldagNodes(to).mkString(";"))
           val deltaInfluence = mutable.HashMap[Int, Double]().withDefaultValue(0.0)
           deltaInfluence += addedNode -> -value
-          debug("Influences on: " + to)
-          debug(currentInfluences.bySecondIterator(to).toList)
+          logger.debug("Influences on: " + to)
+          logger.debug(currentInfluences.bySecondIterator(to).toList.mkString(";"))
           // 20
           g.get(addedNode).traverse(direction = GraphTraversal.Predecessors,
             breadthFirst = true,
@@ -95,7 +93,7 @@ trait InfluenceComputation extends Cache with Logging {
             })(
               nodeVisitor = _ => GraphTraversal.VisitorReturn.Continue,
               edgeVisitor = (e => {
-                debug("first phase edge: " + e)
+                logger.debug("first phase edge: " + e)
                 deltaInfluence += (e._1.value) -> (deltaInfluence(e._1.value) +
                   e.weight / weightDenominator * deltaInfluence(e._2.value))
               }))
@@ -123,11 +121,11 @@ trait InfluenceComputation extends Cache with Logging {
             })(
               edgeVisitor =
                 e => {
-                  debug("2nd phase edge: " + e.toString)
+                  logger.debug("2nd phase edge: " + e.toString)
                   deltaAp(e._2) += deltaAp(e._1) * e.weight / weightDenominator
                 })
-          debug("DeltaAp")
-          debug(deltaAp.mkString(";"))
+          logger.debug("DeltaAp")
+          logger.debug(deltaAp.mkString(";"))
           g.get(addedNode).traverse(direction = GraphTraversal.Successors, breadthFirst = true,
             edgeFilter = { e: g.EdgeT =>
               SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
@@ -135,7 +133,7 @@ trait InfluenceComputation extends Cache with Logging {
             })(
               nodeVisitor =
                 u => {
-                  debug("2nd phase node: " + u.toString)
+                  logger.debug("2nd phase node: " + u.toString)
                   activationProbability((to, u)) += deltaAp(u)
                   incrementalInfluence(u) -= currentInfluences((u, to)) * deltaAp(u)
                   GraphTraversal.VisitorReturn.Continue

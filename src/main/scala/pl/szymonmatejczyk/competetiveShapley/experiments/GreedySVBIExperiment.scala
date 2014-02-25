@@ -21,6 +21,7 @@ import pl.szymonmatejczyk.competetiveShapley.michalakGames.DistanceCutoffGameSV
 import pl.szymonmatejczyk.competetiveShapley.michalakGames.InfluenceAboveThresholdGameSV
 import pl.szymonmatejczyk.competetiveShapley.michalakGames.DistanceCutoffGameSV
 import pl.szymonmatejczyk.competetiveShapley.michalakGames.KFringeGameSV
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.CelfPlusPlus
 
 object GreedySVBIExperiment extends App with Logging {
   val heapSize = Runtime.getRuntime().maxMemory();
@@ -29,7 +30,7 @@ object GreedySVBIExperiment extends App with Logging {
     logger.warn(s"Max heap size($heapSize) may be to small.")
     
   val WEIGHT_DENOMINATOR = 10000L
-  val MAX_GRAPH_SIZE = 500
+  val MAX_GRAPH_SIZE = 300
 
   val LDAG_THRESHOLD = 1.0 / 320.0
 
@@ -65,9 +66,10 @@ object GreedySVBIExperiment extends App with Logging {
   import pl.szymonmatejczyk.competetiveShapley.common._
   
   type IN = InfluenceNetwork
-  val heuristics = Iterable(
-      new InfluenceHeuristic("greedyLdag", (in : IN) => (k : Int) => 
-        in.greedyMostInfluentSearch(k, Some(LDAG_THRESHOLD))),
+  val greedyLDAGHeuristic = new InfluenceHeuristic("greedyLdag", (in : IN) => (k : Int) => 
+        in.greedyMostInfluentSearch(k, Some(LDAG_THRESHOLD)))
+
+  val heuristics = List(
       new InfluenceHeuristic("ldagBI", (in : IN) => (k : Int) => 
         in.computeBIRanking(LDAG_THRESHOLD, BISV_ITER_NO).take(k).map(_._1)),
       new InfluenceHeuristic("ldagSV", (in : IN) => (k : Int) => in.computeSVRanking(BISV_ITER_NO,
@@ -75,37 +77,39 @@ object GreedySVBIExperiment extends App with Logging {
       FringeGameSV.influenceHeuristic,
       KFringeGameSV.influenceHeuristic(3),
       DistanceCutoffGameSV.influenceHeuristic(1.0),
-      InfluenceAboveThresholdGameSV.influenceHeuristic(1.0)
+//      InfluenceAboveThresholdGameSV.influenceHeuristic(1.0),
+      CelfPlusPlus.influenceHeuristic(10000)
       )
   
-  class TestResult(val caseName: String, val seedSize: Int, val greedy: Double, val bi: Double,
-    val sv: Double)
+  type TestValue = (Double, Double, Double) // (value, time, greedySimilarity
+  
+  class TestResult(val caseName: String, val seedSize: Int, val values : Map[String, TestValue])
+
   val results = ListBuffer[TestResult]()
 
   def performExperiment(data: ExperimentCase, seedSize: Int) {
-    println("Data: " + data.name + " Seed size: " + seedSize)
-    val greedyResult = time(s"Greedy ${data.network.g.nodes.size} nodes:",
-      data.network.greedyMostInfluentSearch(seedSize, Some(LDAG_THRESHOLD)))
+    println("Data: " + data.name + " Seed size: " + seedSize + "%")
+    val values = mutable.Map[String, TestValue]()
+    
+    logger.info(s"Testing greedy")
+    val (greedyResult, greedyTime) = time(greedyLDAGHeuristic._2(data.network)(seedSize))
+    val greedyQuality  = data.network.computeTotalInfluence(greedyResult)
+    values += ((greedyLDAGHeuristic._1, (greedyQuality, greedyTime.toMillis, 1.0)))
     data.network.clearCache()
-    val BIresult = time("BI: ", data.network.computeBIRanking(LDAG_THRESHOLD, BISV_ITER_NO).
-      take(seedSize))
-    data.network.clearCache()
-    val SVresult = time("SV: ", data.network.computeSVRanking(BISV_ITER_NO, LDAG_THRESHOLD).
-      take(seedSize))
-    val greedySigma = data.network.computeTotalInfluence(greedyResult)
-    println("Greedy: " + greedySigma)
-    // println(greedyResult)
-    val biSigma = data.network.computeTotalInfluence(BIresult.iterator.map(_._1).toIterable)
-    println("BI: " + biSigma)
-    //      println(BIresult)
-    val svSigma = data.network.computeTotalInfluence(SVresult.iterator.map(_._1).toIterable)
-    println("SV: " + svSigma)
-
-    val gbiSimilarity = setSimilarity(greedyResult.toSet, BIresult.view.map(_._1).toSet)
-    println(s"G:BI similarity: $gbiSimilarity")
-    val gsvSimilarity = setSimilarity(greedyResult.toSet, SVresult.view.map(_._1).toSet)
-    println(s"G:SV similarity: $gsvSimilarity")
-    results += new TestResult(data.name, seedSize, greedySigma, biSigma, svSigma)
+    logger.info(s"Greedy: $greedyQuality, $greedyTime")
+    
+    for (heuristic <- heuristics) {
+      logger.info(s"Testing ${heuristic._1}")
+      val (result, runningTime) = time(heuristic._2(data.network)(seedSize))
+      data.network.clearCache()
+      val quality = data.network.computeTotalInfluence(result)
+      val greedySimilarity = setSimilarity(greedyResult.toSet, result.toSet)
+      values += ((heuristic._1, (quality, runningTime.toMillis, greedySimilarity)))
+      data.network.clearCache()
+      logger.info(s"${heuristic._1}: $quality, $runningTime, $greedySimilarity")
+    }
+    
+    results += new TestResult(data.name, seedSize, values)
   }
 
   for (
@@ -113,7 +117,7 @@ object GreedySVBIExperiment extends App with Logging {
     seedSize <- Iterator.range(10, 50, 5)
   ) {
     try {
-      performExperiment(data, seedSize)
+      performExperiment(data, data.network.size * seedSize / 100)
     } catch {
       case e: Throwable =>
         println(s"Experiment: ${data.name}:$seedSize failed")
@@ -132,24 +136,16 @@ object GreedySVBIExperiment extends App with Logging {
         writer.println()
       }
 
-      print("seedSize")
+      print("seedSize (%)")
       results.foreach {
         x => print("\t" + x.seedSize)
       }
       println()
-      print("greedy")
-      results.foreach {
-        x => print("\t" + x.greedy)
-      }
-      println()
-      print("bi")
-      results.foreach {
-        x => print("\t" + x.bi)
-      }
-      println()
-      print("sv")
-      results.foreach {
-        x => print("\t" + x.sv)
+      for (heuristic <- (greedyLDAGHeuristic :: heuristics)) {
+        print(heuristic._1)
+        results.foreach {
+          x => print("\t" + x.values(heuristic._1))
+        }
       }
       writer.close()
   }

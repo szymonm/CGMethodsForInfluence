@@ -74,6 +74,8 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
   override def clearCache() {
   }
   
+  def size = g.nodes.size
+  
   @deprecated("computes only sum of single influences", "ever")
   def computeTotatInfluences(): immutable.Map[Int, Double] = {
     val influences = getInfluences()

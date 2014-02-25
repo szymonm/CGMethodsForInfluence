@@ -1,11 +1,14 @@
 package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
 
 import collection._
-import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.slf4j.Logging
+
+import pl.szymonmatejczyk.competetiveShapley._
+import pl.szymonmatejczyk.competetiveShapley.common._
+import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 
 trait CelfPlusPlus extends Logging {
   self : InfluenceNetwork =>
@@ -71,7 +74,7 @@ trait CelfPlusPlus extends Logging {
     
     while (seedSet.size < k) {
       val current = priorityQueue.dequeue()
-      logger.info(s"Taking ${current.value}")
+      logger.debug(s"Taking ${current.value}")
       if (records(current).flag == seedSet.size) {
         logger.debug(s"Adding to seed set")
         seedSet += current
@@ -84,7 +87,7 @@ trait CelfPlusPlus extends Logging {
           val (mg1, mg2) = delta(current, curBest, seedSet, MCRuns)
           records += ((current, new NodeRecord(mg1, curBest, mg2, seedSet.size)))
         }
-        logger.info(s"${current.value} mgs: ${records(current).mg1} ${records(current).mg2}")
+        logger.debug(s"${current.value} mgs: ${records(current).mg1} ${records(current).mg2}")
         updateCurBest(records(current).mg1, current)
         priorityQueue += current
       }
@@ -93,4 +96,9 @@ trait CelfPlusPlus extends Logging {
     
     seedSet.map(_.value).toSeq
    }
+}
+
+object CelfPlusPlus {
+  def influenceHeuristic(MCRuns : Int) : InfluenceHeuristic = new InfluenceHeuristic("celf++", 
+      (in : IN) => (k : Int) => in.computeTopKCpp(k, MCRuns))
 }

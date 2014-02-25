@@ -22,6 +22,6 @@ class FringeGameSVTest extends FlatSpec with ShouldMatchers {
   val twoNodes = Graph(1 ~> 2 % 1)
   val n = new WeightedDirectedNetwork(twoNodes, 1) with FringeGameSV
   "FringeGameSV" should "compute SV in simplest case" in {
-    n.computeSV() shouldEqual Map(1 -> 1.5, 2 -> 0.5)
+    n.computeFringeGameSV() shouldEqual Map(1 -> 1.5, 2 -> 0.5)
   }
 }

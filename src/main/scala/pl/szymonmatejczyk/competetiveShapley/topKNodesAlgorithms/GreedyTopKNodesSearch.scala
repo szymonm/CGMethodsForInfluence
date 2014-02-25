@@ -15,23 +15,23 @@ trait GreedyTopKNodesSearch extends InfluenceComputation {
     prepareData()
 
     while (currentInitialSet.size < k) {
-      debug("IncInf:")
-      debug(incrementalInfluence)
-      debug("AP")
-      debug(activationProbability)
+      logger.debug("IncInf:")
+      logger.debug(incrementalInfluence.toString)
+      logger.debug("AP")
+      logger.debug(activationProbability.toString)
       try {
         val current = incrementalInfluence.maxBy(_._2)._1 //s
         builder += current
         addInfluenceNode(current)
 
-        debug("Total influence")
-        debug(computeTotalInfluenceFromActivationProbabilities())
-        debug("Activation probabilities")
-        debug(activationProbability.mkString(";"))
+        logger.debug("Total influence")
+        logger.debug(computeTotalInfluenceFromActivationProbabilities().toString)
+        logger.debug("Activation probabilities")
+        logger.debug(activationProbability.mkString(";"))
       } catch {
         case e: UnsupportedOperationException =>
-          println(incrementalInfluence.mkString(" "))
-          println(g.mkString(" "))
+          logger.warn(incrementalInfluence.mkString(" "))
+          logger.warn(g.mkString(" "))
           throw e
       }
     }

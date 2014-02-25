@@ -16,12 +16,14 @@ import com.typesafe.scalalogging.slf4j.Logging
 object SubgraphFromExtension extends Logging {
   val r = new Random
   
+  val MAX_RUNS = 20
+
   /**
    * Returns pseudo random subgraph of @param graph using BFS from 
    * @param fromNode or a random node not bigger than @param size nodes.
    */
   def randomSubgraph[N: Manifest, E[N] <: EdgeLikeIn[N]](graph: Graph[N, E], size: Int,
-    fromNode: Option[N]): Graph[N, E] = {
+    fromNode: Option[N], runNo : Int = 0): Graph[N, E] = {
     def getRandomNode(): graph.NodeT = {
       //      graph.filterNot(graph.having(node = _.outDegree > 4)).nodes.draw(r)
       val arr = graph.nodes.filter(_.outDegree > 4).toIndexedSeq
@@ -43,7 +45,10 @@ object SubgraphFromExtension extends Logging {
       })
     if (nodes.size < size / 2) {
       logger.warn("Subgraph degenerated...restarting")
-      randomSubgraph(graph, size, fromNode)
+      if (runNo == MAX_RUNS) {
+        throw new IllegalArgumentException("Unable to random nondegenerated graph.")
+      }
+      randomSubgraph(graph, size, fromNode, runNo + 1)
     } else
       graph filter (graph.having(node = nodes.contains(_)))
   }

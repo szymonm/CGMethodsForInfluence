@@ -8,7 +8,7 @@ trait SizeRestriction {
   self : InfluenceNetwork =>
     
   def restrictSize(maxSize: Int, fromNode: Option[Int] = None): InfluenceNetwork = {
-    if (g.size < maxSize)
+    if (size < maxSize)
       self
     else {
       val newGraph = SubgraphFromExtension.randomSubgraph(g, maxSize, fromNode)
