@@ -37,6 +37,13 @@ object WeightedDirectedNetwork {
     from(nodes, edges, edgeDenominator)
   }
   
+  def biCycle(n : Int, edgeWeight : Int, edgeDenominator : Int) : WeightedDirectedNetwork = {
+    val nodes = 1.to(n)
+    val edges = nodes.flatMap(x => List((x ~> ((x % n) + 1) % edgeWeight), 
+        (((x % n) + 1) ~> x % edgeWeight))).toIterable
+    from(nodes, edges, edgeDenominator)
+  }
+  
   def clique(n : Int, edgeWeight : Int, edgeDenominator : Int) : WeightedDirectedNetwork = {
     val nodes = 1.to(n)
     val edges = nodes.combinations(2).flatMap{case x +: y +: Seq() => 

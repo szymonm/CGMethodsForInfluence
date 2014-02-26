@@ -91,7 +91,7 @@ object GreedySVBIExperiment extends App with Logging {
       new InfluenceHeuristic("ldagSV", (in : IN) => (k : Int) => in.computeSVRanking(BISV_ITER_NO,
           LDAG_THRESHOLD).take(k).map(_._1)),
       FringeGameSV.influenceHeuristic,
-      KFringeGameSV.influenceHeuristic(3),
+//      KFringeGameSV.influenceHeuristic(3),
       DistanceCutoffGameSV.influenceHeuristic(1.0),
 //      InfluenceAboveThresholdGameSV.influenceHeuristic(1.0),
       CelfPlusPlus.influenceHeuristic(10000),

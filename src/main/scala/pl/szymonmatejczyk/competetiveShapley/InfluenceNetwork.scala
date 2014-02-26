@@ -46,6 +46,7 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
       extends WeightedDirectedNetwork(g, weightDenominator)
         with LiveGraph
         with IncrementalInfluence
+        with LinearThreshold
         with Logging 
         with GreedyTopKNodesSearch 
         with InfluenceSVCalculator 
@@ -62,7 +63,10 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
         with KFringeGameSV
         with RandomNodes
         with ShapleyValueWithDiscount {
-    implicit val config = new CoreConfig()
+  implicit val config = new CoreConfig()
+  
+  def this(wdn : WeightedDirectedNetwork) = this(wdn.g, wdn.weightDenominator)
+  
   val r = new Random
   val DEFAULT_THRESHOLD = 0.3
   private var _threshold = DEFAULT_THRESHOLD
