@@ -43,7 +43,7 @@ trait IncrementalInfluence extends LiveGraph {
       additionalNodeSeqs : Seq[Seq[g.NodeT]], mcIterations : Int) : Seq[Double] = {
     def zippedSum(l1 : Seq[Int], l2 : Seq[Int]) = l1.zip(l2).map(x => x._1 + x._2)
     
-    0.to(mcIterations).par.map{
+    1.to(mcIterations).par.map{
       _ => randomInfluence(seed, additionalNodeSeqs).map(unpack)
     }.foldLeft(Seq.tabulate(additionalNodeSeqs.size)(_ => 0)){case (x,y) => zippedSum(x, y)}.
     map(_.toDouble / mcIterations)
