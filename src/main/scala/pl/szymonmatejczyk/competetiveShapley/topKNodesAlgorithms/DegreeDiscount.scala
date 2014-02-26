@@ -43,8 +43,7 @@ trait DegreeDiscount {
         }
       }
     }
-    
-    res.toList
+    res
   }
 
 }
