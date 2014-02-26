@@ -40,15 +40,15 @@ object GreedySVBIExperiment extends App with Logging {
     logger.warn(s"Max heap size($heapSize) may be to small.")
     
   val WEIGHT_DENOMINATOR = 10000L
-  val MAX_GRAPH_SIZE = 100
+  val MAX_GRAPH_SIZE = 500
 
   val LDAG_THRESHOLD = 1.0 / 320.0
 
-  val BISV_ITER_NO = 100
+  val BISV_ITER_NO = 1000
   
-  val SEED_PERCENT_RANGE = Iterator.range(10, 50, 10)
+  def SEED_PERCENT_RANGE = Iterator.range(10, 50, 5)
   
-  val resultsDirectory = if (args.size > 0) args(0) else s"results$hostname"
+  val resultsDirectory = if (args.size > 0) args(0) else s"results$hostname.log"
   (new File(resultsDirectory)).mkdir()
 
   class ExperimentCase(val name: String, val network: InfluenceNetwork)
@@ -98,7 +98,7 @@ object GreedySVBIExperiment extends App with Logging {
   
   type TestValue = (Double, Double, Double) // (value, time, greedySimilarity
   
-  class TestResult(val caseName: String, val seedSize: Int, val values : Map[String, TestValue])
+  case class TestResult(val caseName: String, val seedSize: Int, val values : Map[String, TestValue])
 
   val results = ListBuffer[TestResult]()
 
@@ -114,7 +114,7 @@ object GreedySVBIExperiment extends App with Logging {
     logger.info(s"Greedy(${data.name}): $greedyQuality, $greedyTime ")
     
     for (heuristic <- heuristics) {
-      logger.info(s"Testing ${heuristic._1}")
+      logger.info(s"Testing ${heuristic._1}(${data.name})")
       val (result, runningTime) = time(heuristic._2(data.network)(seedSize))
       data.network.clearCache()
       val quality = data.network.computeTotalInfluence(result)
@@ -151,26 +151,34 @@ object GreedySVBIExperiment extends App with Logging {
     }
     future.onSuccess {
       case listOfResults =>
-        logger.info("Printing results ${data.name}")
+        logger.info(s"Printing results ${data.name}")
         printResultsToFile(s"$resultsDirectory/${data.name.replace(".", "_")}.res",
-        listOfResults)
+          listOfResults)
+        printResultsToFile(s"$resultsDirectory/${data.name.replace(".", "_")}_times.res",
+          listOfResults, (_._2))
+        printResultsToFile(s"$resultsDirectory/${data.name.replace(".", "_")}_greedySimilarities.res",
+          listOfResults, (_._3))
     }
     future
   }
   
   Await.result(Future.sequence(futures), Duration.Inf)
 
-  def printResultsToFile(filename : String, results : List[TestResult]) {
+  def printResultsToFile(filename : String, results : List[TestResult], 
+      unpack : TestValue => Double = (_._1)) {
     val resultsMap = results.groupBy(_.seedSize)
     val seedSizesSorted = results.map(_.seedSize).sorted
     val writer = new PrintWriter(new File(filename))
     
-    writer.println("seedSize\t" + seedSizesSorted.mkString("\t"))
+    def aligningSpaces(s : String) = " " * (20 - s.size)
+    def stringAligned(s : String) = s + aligningSpaces(s)
+    writer.println(s"${stringAligned("seedSize")}\t" + seedSizesSorted.mkString("\t"))
     (greedyLDAGHeuristic :: heuristics).foreach{
       heuristic =>
-        val resultsSorted = seedSizesSorted.map(resultsMap(_).head.values(heuristic._1))
+        val resultsSorted = seedSizesSorted.map(x => unpack(resultsMap(x).head.values(heuristic._1)))
           .mkString("\t")
-        writer.println(heuristic._1 + "\t" + resultsSorted)
+        writer.println(stringAligned(heuristic._1) + "\t" + resultsSorted)
     }
+    writer.close()
   }
 }
