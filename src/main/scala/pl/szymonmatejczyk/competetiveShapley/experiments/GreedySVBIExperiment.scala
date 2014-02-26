@@ -31,6 +31,7 @@ import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.CelfPlusPlus
 import java.net.InetAddress
 import scala.util.Success
 import scala.util.Failure
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.RandomNodes
 
 object GreedySVBIExperiment extends App with Logging {
   val heapSize = java.lang.Runtime.getRuntime().maxMemory();
@@ -93,7 +94,8 @@ object GreedySVBIExperiment extends App with Logging {
       KFringeGameSV.influenceHeuristic(3),
       DistanceCutoffGameSV.influenceHeuristic(1.0),
 //      InfluenceAboveThresholdGameSV.influenceHeuristic(1.0),
-      CelfPlusPlus.influenceHeuristic(10000)
+      CelfPlusPlus.influenceHeuristic(10000),
+      RandomNodes.influenceHeuristic()
       )
   
   type TestValue = (Double, Double, Double) // (value, time, greedySimilarity
