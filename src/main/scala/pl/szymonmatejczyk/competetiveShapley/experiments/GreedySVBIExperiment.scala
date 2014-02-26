@@ -9,8 +9,6 @@ import scala.concurrent._
 import scala.concurrent.duration.Duration
 import ExecutionContext.Implicits.global
 import com.typesafe.scalalogging.slf4j.Logging
-import scala.pickling._
-import json._
 import pl.szymonmatejczyk.competetiveShapley.utils._
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils.time
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader._
@@ -46,6 +44,8 @@ object GreedySVBIExperiment extends App with Logging {
   val LDAG_THRESHOLD = 1.0 / 320.0
 
   val BISV_ITER_NO = 1000
+  
+  val MC_RUNS = 10000
   
   def SEED_PERCENT_RANGE = Iterator.range(10, 50, 5)
   
@@ -98,7 +98,7 @@ object GreedySVBIExperiment extends App with Logging {
       RandomNodes.influenceHeuristic()
       )
   
-  type TestValue = (Double, Double, Double) // (value, time, greedySimilarity
+  type TestValue = (Double, Double, Double, Double) // (ICvalue, time, greedySimilarity, LTvalue)
   
   case class TestResult(val caseName: String, val seedSize: Int, val values : Map[String, TestValue])
 
@@ -110,31 +110,26 @@ object GreedySVBIExperiment extends App with Logging {
     
     logger.info(s"Testing greedy (${data.name})")
     val (greedyResult, greedyTime) = time(greedyLDAGHeuristic._2(data.network)(seedSize))
-    val greedyQuality  = data.network.computeTotalInfluence(greedyResult)
-    values += ((greedyLDAGHeuristic._1, (greedyQuality, greedyTime.toMillis, 1.0)))
+    val greedyICQuality  = data.network.computeTotalInfluence(greedyResult)
+    val greedyLTQuality = data.network.mcLinearThresholdSeedQuality(greedyResult, MC_RUNS)
+    values += ((greedyLDAGHeuristic._1, (greedyICQuality, greedyTime.toMillis, 1.0, 
+                                         greedyLTQuality)))
     data.network.clearCache()
-    logger.info(s"Greedy(${data.name}): $greedyQuality, $greedyTime ")
+    logger.info(s"Greedy(${data.name}): $greedyICQuality, $greedyTime ")
     
     for (heuristic <- heuristics) {
       logger.info(s"Testing ${heuristic._1}(${data.name})")
       val (result, runningTime) = time(heuristic._2(data.network)(seedSize))
       data.network.clearCache()
-      val quality = data.network.computeTotalInfluence(result)
+      val ICquality = data.network.computeTotalInfluence(result)
+      val LTquality = data.network.mcLinearThresholdSeedQuality(result, MC_RUNS)
       val greedySimilarity = setSimilarity(greedyResult.toSet, result.toSet)
-      values += ((heuristic._1, (quality, runningTime.toMillis, greedySimilarity)))
+      values += ((heuristic._1, (ICquality, runningTime.toMillis, greedySimilarity, LTquality)))
       data.network.clearCache()
-      logger.info(s"${heuristic._1}(${data.name}): $quality, $runningTime, $greedySimilarity")
+      logger.info(s"${heuristic._1}(${data.name}): $ICquality, $runningTime, $greedySimilarity")
     }
     
     new TestResult(data.name, seedSize, values)
-  }
-  
-//    persistResults(results.toList, s"$resultsDirectory/PersistedResults.json")
-  def persistResults(results : List[TestResult], filename : String) {
-    val pickled = results.pickle
-    val writer = new PrintWriter(new File(filename))
-    writer.print(pickled)
-    writer.close()
   }
 
   val futures = for (
