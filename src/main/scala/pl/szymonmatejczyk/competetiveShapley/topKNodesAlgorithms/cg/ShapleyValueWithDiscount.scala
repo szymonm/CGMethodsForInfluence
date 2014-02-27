@@ -12,17 +12,23 @@ trait ShapleyValueWithDiscount {
     if (k > size) {
       throw new IllegalArgumentException("K greater than number of nodes in graph.")
     }
-    
+
+    val fringeSV = mutable.Map[g.NodeT, Double]()
     val discountedShapley = mutable.Map[g.NodeT, Double]()
     
     val byDiscountedShapleyOrdering = Ordering.by[g.NodeT, Double](n => discountedShapley(n))
     val DSVPriorityQueue = mutable.PriorityQueue[g.NodeT]()(byDiscountedShapleyOrdering)
     
+    var maxSV = 0.0
     g.nodes.foreach{
       node =>
-        discountedShapley += ((node, computeSingleSV(node.value)))
+        val sv = computeSingleSV(node.value)
+        maxSV = math.max(maxSV, sv)
+        fringeSV += ((node, sv))
         DSVPriorityQueue += node
     }
+    
+    discountedShapley ++= fringeSV
     
     val outdatedPosition = mutable.Set[g.NodeT]()
     
@@ -35,10 +41,14 @@ trait ShapleyValueWithDiscount {
         outdatedPosition -= current
       } else {
         res += current.value
-        for (neighbour <- current.inNeighbors) {
-          discountedShapley += ((neighbour, discountedShapley(neighbour) - 
-              (1.0 / (1 + current.inDegree))))
+        for (neighbour <- current.outNeighbors) {
+          discountedShapley += ((neighbour, fringeSV(neighbour) - (maxSV + 1))) 
           outdatedPosition += neighbour
+          val neighboursOfNeighbour = neighbour.inNeighbors.filter(discountedShapley(_) > 0.0)
+          for (neighbourOfNeighbour @ nn <- neighboursOfNeighbour) {
+            discountedShapley += ((nn, discountedShapley(nn) -
+              (1.0 / (1 + neighbour.inDegree))))
+          }
         } 
       }
     }
