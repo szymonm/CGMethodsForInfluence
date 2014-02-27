@@ -25,10 +25,9 @@ trait ShapleyValueWithDiscount {
         val sv = computeSingleSV(node.value)
         maxSV = math.max(maxSV, sv)
         fringeSV += ((node, sv))
+        discountedShapley += ((node, sv))
         DSVPriorityQueue += node
     }
-    
-    discountedShapley ++= fringeSV
     
     val outdatedPosition = mutable.Set[g.NodeT]()
     
@@ -45,8 +44,8 @@ trait ShapleyValueWithDiscount {
           discountedShapley += ((neighbour, fringeSV(neighbour) - (maxSV + 1))) 
           outdatedPosition += neighbour
           val neighboursOfNeighbour = neighbour.inNeighbors.filter(discountedShapley(_) > 0.0)
-          for (neighbourOfNeighbour @ nn <- neighboursOfNeighbour) {
-            discountedShapley += ((nn, discountedShapley(nn) -
+          for (neighbourOfNeighbour <- neighboursOfNeighbour) {
+            discountedShapley += ((neighbourOfNeighbour, discountedShapley(neighbourOfNeighbour) -
               (1.0 / (1 + neighbour.inDegree))))
           }
         } 
