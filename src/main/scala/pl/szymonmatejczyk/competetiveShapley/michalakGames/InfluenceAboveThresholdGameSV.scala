@@ -52,7 +52,7 @@ trait InfluenceAboveThresholdGameSV {
         var p = 0.0
         0.to(neighbour.inDegree).foreach{
           m =>
-            if (neighbour.inDegree <= 1) {
+            if (neighbour.inDegree <= 2) {
               p += 1 / 2 * g.get(node).findOutgoingTo(neighbour).fold(0.0)(_.weight) // 1/2 * wij
             } else {
               val wij = g.get(node).findOutgoingTo(neighbour).fold(0.0)(_.weight)

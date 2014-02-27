@@ -96,7 +96,7 @@ object GreedySVBIExperiment extends App with Logging {
       FringeGameSV.influenceHeuristic,
 //      KFringeGameSV.influenceHeuristic(3),
       DistanceCutoffGameSV.influenceHeuristic(1.0),
-//      InfluenceAboveThresholdGameSV.influenceHeuristic(1.0),
+      InfluenceAboveThresholdGameSV.influenceHeuristic(1.0),
       CelfPlusPlus.influenceHeuristic(MC_RUNS),
       RandomNodes.influenceHeuristic(),
       ShapleyValueWithDiscount.influenceHeuristic,
