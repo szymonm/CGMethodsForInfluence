@@ -31,6 +31,7 @@ import scala.util.Success
 import scala.util.Failure
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.RandomNodes
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.ShapleyValueWithDiscount
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
 
 object GreedySVBIExperiment extends App with Logging {
   val heapSize = java.lang.Runtime.getRuntime().maxMemory();
@@ -40,11 +41,12 @@ object GreedySVBIExperiment extends App with Logging {
     logger.warn(s"Max heap size($heapSize) may be to small.")
     
   val WEIGHT_DENOMINATOR = 10000L
-  val MAX_GRAPH_SIZE = 500
+  val MAX_GRAPH_SIZE = 1000
 
   val LDAG_THRESHOLD = 1.0 / 320.0
 
-  val BISV_ITER_NO = 1000
+  val BI_ITER_NO = 1000
+  val SV_ITER_NO = 500
   
   val MC_RUNS = 10000
   
@@ -71,8 +73,8 @@ object GreedySVBIExperiment extends App with Logging {
         new DataCase("lesmiserables", "../graphs/gml/lesmiserables[W].gml", GML, true),
         new DataCase("amazon", TXT_PATH + "amazon0302.txt", TXT),
         new DataCase("p2pGnutella", TXT_PATH + "p2p-Gnutella04.txt", TXT),
-    //        new DataCase("Slashdot", TXT_PATH + "Slashdot081106.txt", TXT),
-//    new DataCase("web-stanford", TXT_PATH + "web-Stanford.txt", TXT),
+//        new DataCase("Slashdot", TXT_PATH + "Slashdot081106.txt", TXT),
+        new DataCase("web-stanford", TXT_PATH + "web-Stanford.txt", TXT),
 //    new DataCase("wiki-Vote", TXT_PATH + "wiki-Vote.txt", TXT),
 //    new DataCase("email-Enron", TXT_PATH + "email-Enron.txt", TXT),
     //    new DataCase("simple.txt", TXT_PATH + "simple.txt", TXT),
@@ -88,8 +90,8 @@ object GreedySVBIExperiment extends App with Logging {
 
   val heuristics = List(
       new InfluenceHeuristic("ldagBI", (in : IN) => (k : Int) => 
-        in.computeBIRanking(LDAG_THRESHOLD, BISV_ITER_NO).take(k).map(_._1)),
-      new InfluenceHeuristic("ldagSV", (in : IN) => (k : Int) => in.computeSVRanking(BISV_ITER_NO,
+        in.computeBIRanking(LDAG_THRESHOLD, BI_ITER_NO).take(k).map(_._1)),
+      new InfluenceHeuristic("ldagSV", (in : IN) => (k : Int) => in.computeSVRanking(SV_ITER_NO,
           LDAG_THRESHOLD).take(k).map(_._1)),
       FringeGameSV.influenceHeuristic,
 //      KFringeGameSV.influenceHeuristic(3),
@@ -97,7 +99,8 @@ object GreedySVBIExperiment extends App with Logging {
 //      InfluenceAboveThresholdGameSV.influenceHeuristic(1.0),
       CelfPlusPlus.influenceHeuristic(MC_RUNS),
       RandomNodes.influenceHeuristic(),
-      ShapleyValueWithDiscount.influenceHeuristic
+      ShapleyValueWithDiscount.influenceHeuristic,
+      DegreeDiscount.influenceHeuristic()
       )
   
   type TestValue = (Double, Double, Double, Double) // (ICvalue, time, greedySimilarity, LTvalue)
@@ -145,6 +148,7 @@ object GreedySVBIExperiment extends App with Logging {
           case e: Throwable =>
             logger.warn(s"Experiment ${data.name} seed size: $seedSize failed.")
             logger.warn(e.getMessage())
+            logger.warn(e.getStackTraceString)
             x
         })
     }
