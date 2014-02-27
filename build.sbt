@@ -23,3 +23,6 @@ lazy val logback = "ch.qos.logback" % "logback-classic" % "1.0.9"
 parallelExecution in Test := false
 
 javaOptions in run += "-Xmx4G"
+
+// One jar sbt plugin settings
+seq(com.github.retronym.SbtOneJar.oneJarSettings: _*)
