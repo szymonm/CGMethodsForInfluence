@@ -2,6 +2,7 @@ package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
 
 import collection._
 
+import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 
 trait DegreeDiscount {
@@ -45,5 +46,9 @@ trait DegreeDiscount {
     }
     res
   }
+}
 
+object DegreeDiscount {
+  def influenceHeuristic(): InfluenceHeuristic = new InfluenceHeuristic("degreeDiscount",
+    (in: IN) => (k: Int) => in.computeTokKNodesDD(k))
 }
