@@ -5,11 +5,12 @@ import scalax.collection.Graph
 import scalax.collection.GraphPredef._
 import scalax.collection.GraphEdge._
 import scalax.collection.edge.Implicits._
-
 import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import pl.szymonmatejczyk.competetiveShapley.utils.math.Erf._
 import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.common._
+import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
+import scala.concurrent.duration.Duration
 
 trait InfluenceAboveThresholdGameSV {
   self : WeightedDirectedNetwork => 
@@ -79,7 +80,16 @@ trait InfluenceAboveThresholdGameSV {
 }
 
 object InfluenceAboveThresholdGameSV {
-  def influenceHeuristic(cutoff : Double) = new InfluenceHeuristic("influenceAboveThreshold", 
+  val NAME = "influenceAbThreshold"
+  def influenceHeuristic(cutoff : Double) = new InfluenceHeuristic(NAME , 
       (in : IN) => (k : Int) => topKFromMap[Int](k, 
           in.computeInfluenceAboveThresholdGameSV(_ => cutoff)))
+  
+  def influenceHeuristicForSequenceOfK(cutoff : Double): InfluenceHeuristicForSequenceOfK = {
+    def influence(in: InfluenceNetwork)(ks: Seq[Int]): Seq[(Seq[Int], Duration)] = {
+      val (rank, rtime) = TestingUtils.time(in.computeInfluenceAboveThresholdGameSV(_ => cutoff))
+      topKsFromMap(ks, rank).map(x => (x, rtime))
+    }
+    (NAME, (influence _))
+  }
 }

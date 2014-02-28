@@ -2,10 +2,11 @@ package pl.szymonmatejczyk.competetiveShapley.michalakGames
 
 import scala.collection._
 import scalax.collection.GraphPredef.graphParamsToPartition
-
 import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.common._
+import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
+import scala.concurrent.duration.Duration
 
 trait FringeGameSV {
   self : WeightedDirectedNetwork =>
@@ -23,6 +24,15 @@ trait FringeGameSV {
 }
 
 object FringeGameSV {
-  def influenceHeuristic : InfluenceHeuristic = new InfluenceHeuristic("fringeGame", (in : IN) => 
+  def NAME = "fringeGame"
+  def influenceHeuristic : InfluenceHeuristic = new InfluenceHeuristic(NAME, (in : IN) => 
     (k : Int) => topKFromMap[Int](k, in.computeFringeGameSV()))
+  
+  def influenceHeuristicForSequenceOfK: InfluenceHeuristicForSequenceOfK = {
+    def influence(in: InfluenceNetwork)(ks: Seq[Int]): Seq[(Seq[Int], Duration)] = {
+      val (rank, rtime) = TestingUtils.time(in.computeFringeGameSV())
+      topKsFromMap(ks, rank).map(x => (x, rtime))
+    }
+    (NAME, (influence _))
+  }
 }

@@ -6,6 +6,8 @@ import scalax.collection.GraphPredef.graphParamsToPartition
 import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
 import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.common._
+import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
+import scala.concurrent.duration.Duration
 
 trait DistanceCutoffGameSV {
   self : WeightedDirectedNetwork =>
@@ -53,6 +55,16 @@ trait DistanceCutoffGameSV {
 }
 
 object DistanceCutoffGameSV {
-  def influenceHeuristic(cutoff : Double) : InfluenceHeuristic = new InfluenceHeuristic("distanceCutoff", 
+  val NAME = "distanceCutoff"
+    
+  def influenceHeuristic(cutoff : Double) : InfluenceHeuristic = new InfluenceHeuristic(NAME, 
       (in : IN) => (k : Int) => topKFromMap[Int](k, in.computeDistanceCutoffSV(cutoff)))
+  
+  def influenceHeuristicForSequenceOfK(cutoff : Double): InfluenceHeuristicForSequenceOfK = {
+    def influence(in: InfluenceNetwork)(ks: Seq[Int]): Seq[(Seq[Int], Duration)] = {
+      val (rank, rtime) = TestingUtils.time(in.computeDistanceCutoffSV(cutoff))
+      topKsFromMap(ks, rank).map(x => (x, rtime))
+    }
+    (NAME, (influence _))
+  }
 }
