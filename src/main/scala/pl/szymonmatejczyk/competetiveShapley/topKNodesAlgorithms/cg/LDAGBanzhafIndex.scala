@@ -5,6 +5,11 @@ import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.CoalitionGenera
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import scalax.collection.GraphPredef.graphParamsToPartition
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import pl.szymonmatejczyk.competetiveShapley.InfluenceHeuristic
+import pl.szymonmatejczyk.competetiveShapley._
+import pl.szymonmatejczyk.competetiveShapley.common._
+import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
+import scala.concurrent.duration.Duration
 
 trait LDAGBanzhafIndex {
   self : InfluenceNetwork =>  
@@ -29,7 +34,7 @@ trait LDAGBanzhafIndex {
   }
 
   def computeBIInLDAG(ldagHead: Int, node: Int, iterNo: Int = 10): Double = {
-    val BIA = new BanzhaffIndexApproximator
+    val BIA = new BanzhaffIndexApproximator()
 
     val coalitionGeneratorSucc = CoalitionGenerator(computeLDAGSuccessors(ldagHead, node), iterNo)
     val succSum = BIA.approximateAbsoluteBanzhaffIndex[Set[Int]](
@@ -42,4 +47,19 @@ trait LDAGBanzhafIndex {
       coalitionGeneratorPred.generate _)
     succSum * predSum
   }
+}
+
+object LDAGBanzhafIndex {
+  val NAME = "ldagBanzhaf"
+    
+  def influenceHeuristic(iterNo : Int, threshold : Double): InfluenceHeuristic = new InfluenceHeuristic(NAME, 
+      (in: IN) => (k: Int) => in.computeBIRanking(threshold, iterNo).map(_._1).take(k))
+
+  def influenceHeuristicForSequenceOfK(iterations : Int, threshold : Double): InfluenceHeuristicForSequenceOfK = {
+    def influence(in: InfluenceNetwork)(ks: Seq[Int]): Seq[(Seq[Int], Duration)] = {
+      val (rank, rtime) = TestingUtils.time(in.computeBIRanking(threshold, iterations).map(_._1))
+      topKsFromRank(ks, rank).map(x => (x, rtime))
+    }
+    (NAME, (influence _))
+  } 
 }
