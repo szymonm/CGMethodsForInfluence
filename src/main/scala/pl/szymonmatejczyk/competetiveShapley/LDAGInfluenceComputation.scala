@@ -74,6 +74,7 @@ trait InfluenceComputation extends Cache with Logging {
     computeTotalInfluenceFromActivationProbabilities()
   }
 
+  /* Todo: make this function executable in parallel */
   def addInfluenceNode(addedNode: Int) {
     logger.debug("Added node: " + addedNode)
     currentInfluences.byFirstIterator(addedNode).foreach {
