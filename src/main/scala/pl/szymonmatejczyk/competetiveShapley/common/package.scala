@@ -11,8 +11,8 @@ package object common {
   def longToDouble(l: Long, denominator: Double) = l.toDouble / denominator
   
   def rankFromMap[K](map : Map[K, Double]) : Seq[K] = {
-    (SortedSet[(K, Double)]()(Ordering.by[(K, Double), Double](-_._2)) ++ map)
-      .map(_._1).toSeq
+    map.toSeq.sortBy(-_._2).map(_._1)
+//    (SortedSet[(K, Double)]()(Ordering.by[(K, Double), Double](-_._2)) ++ map).map(_._1).toSeq
   }
   
   def topKFromMap[K](k : Int, map : Map[K, Double]) : Seq[K] = {
@@ -28,5 +28,4 @@ package object common {
   def topKsFromMap[K](ks: Seq[Int], map: Map[K, Double]): Seq[Seq[K]] = {
     topKsFromRank(ks, rankFromMap(map))
   }
-  
 }
