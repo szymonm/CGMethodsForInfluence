@@ -16,7 +16,7 @@ import com.typesafe.scalalogging.slf4j.Logging
 object SubgraphFromExtension extends Logging {
   val r = new Random
   
-  val MAX_RUNS = 20
+  val MAX_RUNS = 25
 
   /**
    * Returns pseudo random subgraph of @param graph using BFS from 
@@ -35,7 +35,8 @@ object SubgraphFromExtension extends Logging {
       case None => getRandomNode
     }
     var nodes = Set[N]()
-    startingNode.traverse(maxDepth = math.sqrt(size).toInt)(nodeVisitor =
+    startingNode.traverse(direction = GraphTraversal.AnyConnected,
+        maxDepth = 2 * math.sqrt(size).toInt)(nodeVisitor =
       u => {
         nodes += (u.value)
         if (nodes.size < size)
