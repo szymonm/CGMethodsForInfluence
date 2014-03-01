@@ -33,3 +33,7 @@ res*/
 *.swp
 
 tests.sh
+
+*.pdf
+
+*.png
