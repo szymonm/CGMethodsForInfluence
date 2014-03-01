@@ -1,18 +1,17 @@
 package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
 
 import collection._
-
 import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import scala.concurrent.duration.Duration
+import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
+import scala.annotation.tailrec
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms._
 
 trait ShapleyValueWithDiscount {
   self : InfluenceNetwork =>
     
-  def topKFringeSVWithDiscount(k : Int) : Seq[Int] = {
-    if (k > size) {
-      throw new IllegalArgumentException("K greater than number of nodes in graph.")
-    }
-
+  def topKFringeSVWithDiscount() : Stream[Int] = {
     val fringeSV = mutable.Map[g.NodeT, Double]()
     val discountedShapley = mutable.Map[g.NodeT, Double]()
     
@@ -29,33 +28,53 @@ trait ShapleyValueWithDiscount {
         DSVPriorityQueue += node
     }
     
+    val meanEdgeWeight = g.edges.map(_.weight.toDouble / weightDenominator).sum / g.edges.size
+    
     val outdatedPosition = mutable.Set[g.NodeT]()
     
-    val res = mutable.ListBuffer[Int]()
-    
-    while (res.size < k) {
+    @tailrec
+    def getNext() : Int = {
       val current = DSVPriorityQueue.dequeue
       if (outdatedPosition.contains(current)) {
         DSVPriorityQueue += current
         outdatedPosition -= current
+        getNext()
       } else {
-        res += current.value
-        for (neighbour <- current.outNeighbors) {
+        val strongOutNeighbours = current.outgoing
+          .filter(e => e.weight / weightDenominator > meanEdgeWeight).map(_._2) 
+        for (neighbour <- strongOutNeighbours) {
           discountedShapley += ((neighbour, fringeSV(neighbour) - (maxSV + 1))) 
           outdatedPosition += neighbour
           val neighboursOfNeighbour = neighbour.inNeighbors.filter(discountedShapley(_) > 0.0)
           for (neighbourOfNeighbour <- neighboursOfNeighbour) {
             discountedShapley += ((neighbourOfNeighbour, discountedShapley(neighbourOfNeighbour) -
               (1.0 / (1 + neighbour.inDegree))))
+            outdatedPosition += neighbourOfNeighbour
           }
-        } 
+        }
+        current
       }
     }
-    res
+    
+
+    def getStream() : Stream[Int] = {
+      if (DSVPriorityQueue.nonEmpty) {
+        getNext() #:: getStream()
+      } else {
+        logger.warn("Nodes finished.")
+        Stream.empty
+      }
+    }
+    
+    getStream()
   }
 }
 
 object ShapleyValueWithDiscount {
-    def influenceHeuristic : InfluenceHeuristic = new InfluenceHeuristic("SVWithDiscount", 
-        (in : IN) => (k : Int) => in.topKFringeSVWithDiscount(k))
+  val NAME = "SVWithDiscount"
+  def influenceHeuristic: InfluenceHeuristic = new InfluenceHeuristic(NAME,
+    (in: IN) => (k: Int) => in.topKFringeSVWithDiscount().take(k))
+  
+  def influenceHeuristicForSequenceOfK = streamToInfluenceHeuristic(NAME,
+    (in: InfluenceNetwork) => in.topKFringeSVWithDiscount())
 }

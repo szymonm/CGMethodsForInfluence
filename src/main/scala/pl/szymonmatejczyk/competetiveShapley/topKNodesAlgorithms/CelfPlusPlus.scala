@@ -5,10 +5,10 @@ import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import com.typesafe.scalalogging.slf4j.Logging
-
 import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.common._
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import scala.annotation.tailrec
 
 trait CelfPlusPlus extends Logging {
   self : InfluenceNetwork =>
@@ -45,7 +45,8 @@ trait CelfPlusPlus extends Logging {
     }
   } 
   
-  def computeTopKCpp(k : Int, MCRuns : Int = 10000) : Seq[Int] = {
+  /** Greedy algorithm */
+  def computeTopCpp(MCRuns : Int = 10000) : Stream[Int] = {
     val seedSet = mutable.ListBuffer[g.NodeT]()
     val records = mutable.Map[g.NodeT, NodeRecord]()
     
@@ -72,13 +73,15 @@ trait CelfPlusPlus extends Logging {
         updateCurBest(mg1, node)
     }
     
-    while (seedSet.size < k) {
+    @tailrec
+    def getNext() : Int = {
       val current = priorityQueue.dequeue()
       logger.debug(s"Taking ${current.value}")
       if (records(current).flag == seedSet.size) {
         logger.debug(s"Adding to seed set")
         seedSet += current
         lastSeed = Some(current)
+        current
       } else {
         if (records(current).prevBest == lastSeed) {
           records(current).mg1 = records(current).mg2
@@ -90,15 +93,26 @@ trait CelfPlusPlus extends Logging {
         logger.debug(s"${current.value} mgs: ${records(current).mg1} ${records(current).mg2}")
         updateCurBest(records(current).mg1, current)
         priorityQueue += current
+        getNext()
       }
-      
     }
     
-    seedSet.map(_.value).toSeq
+    def getStream() : Stream[Int] = {
+      if (priorityQueue.nonEmpty)
+        getNext() #:: getStream()
+      else
+        Stream.empty
+    }
+    
+    getStream()
    }
 }
 
 object CelfPlusPlus {
-  def influenceHeuristic(MCRuns : Int) : InfluenceHeuristic = new InfluenceHeuristic("celf++", 
-      (in : IN) => (k : Int) => in.computeTopKCpp(k, MCRuns))
+  val NAME = "celf++"
+  def influenceHeuristic(MCRuns : Int) : InfluenceHeuristic = new InfluenceHeuristic(NAME, 
+      (in : IN) => (k : Int) => in.computeTopCpp(MCRuns).take(k))
+  
+  def influenceHeuristicForSequenceOfK = streamToInfluenceHeuristic(NAME,
+    (in: InfluenceNetwork) => in.computeTopCpp())
 }

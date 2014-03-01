@@ -19,7 +19,7 @@ class DegreeDiscountTest extends FlatSpec with ShouldMatchers {
   "DegreeDiscount" should "return center node of a star" in {
     val starOut = WeightedDirectedNetwork.starOut(5, 1, 1)
     val network = InfluenceNetwork(starOut)
-    network.computeTokKNodesDD(1) shouldEqual Seq(1)
+    network.computeTopNodesDD().head shouldEqual 1
   }
   
   it should "return only one node of a clique" in {
@@ -27,6 +27,6 @@ class DegreeDiscountTest extends FlatSpec with ShouldMatchers {
     val edges = List(1 ~> 4 % 1, 4 ~> 5 % 1 ,2 ~> 5 % 1,
                      1 ~> 5 % 1)
     val network = new InfluenceNetwork(clique.g ++ edges, 1)
-    network.computeTokKNodesDD(3) shouldEqual Seq(1, 2, 4)
+    network.computeTopNodesDD.take(3) shouldEqual Seq(1, 2, 4)
   }
 }

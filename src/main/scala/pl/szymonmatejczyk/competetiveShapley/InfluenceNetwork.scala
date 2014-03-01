@@ -25,9 +25,9 @@ import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGene
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
 import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphFromExtension
 import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.GreedyTopKNodesSearch
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.LDAGGreedyTopNodes
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGBanzhafIndex
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.InfluenceSVCalculator
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGShapleyValue
 import pl.szymonmatejczyk.competetiveShapley.ldags.InfluenceNetworkLDAGApproximation
 import pl.szymonmatejczyk.competetiveShapley.ldags.LDAGApproximation
 import pl.szymonmatejczyk.competetiveShapley.graphs.SizeRestriction
@@ -48,8 +48,8 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
         with IncrementalInfluence
         with LinearThreshold
         with Logging 
-        with GreedyTopKNodesSearch 
-        with InfluenceSVCalculator 
+        with LDAGGreedyTopNodes 
+        with LDAGShapleyValue 
         with LDAGApproximation 
         with SizeRestriction 
         with SingularInfluences 

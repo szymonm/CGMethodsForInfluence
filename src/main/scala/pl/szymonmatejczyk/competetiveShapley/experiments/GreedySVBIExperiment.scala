@@ -32,6 +32,9 @@ import scala.util.Failure
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.RandomNodes
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.ShapleyValueWithDiscount
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.GreedyLDAGTopNodes
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGShapleyValue
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGBanzhafIndex
 
 object GreedySVBIExperiment extends App with Logging {
   val heapSize = java.lang.Runtime.getRuntime().maxMemory();
@@ -41,19 +44,22 @@ object GreedySVBIExperiment extends App with Logging {
     logger.warn(s"Max heap size($heapSize) may be to small.")
     
   val WEIGHT_DENOMINATOR = 10000L
-  val MAX_GRAPH_SIZE = 1000
-
+  
   val LDAG_THRESHOLD = 1.0 / 320.0
 
   val BI_ITER_NO = 1000
-  val SV_ITER_NO = 500
+  val SV_ITER_NO = 200
   
   val MC_RUNS = 10000
   
-  def SEED_PERCENT_RANGE = Iterator.range(10, 50, 5)
+  def SEED_PERCENT_RANGE = Range(2, 32,  4)
   
-  val resultsDirectory = if (args.size > 0) args(0) else s"results$hostname.log"
+  val resultsDirectory = if (args.size > 0) args(0) else s"results$hostname"
   (new File(resultsDirectory)).mkdir()
+  
+  val allResults = new PrintWriter(new File(resultsDirectory + "/all.res"))
+  
+  val MAX_GRAPH_SIZE = if (args.size > 1) args(1).toInt else 2000
 
   class ExperimentCase(val name: String, val network: InfluenceNetwork)
 
@@ -62,118 +68,141 @@ object GreedySVBIExperiment extends App with Logging {
     extends ExperimentCase(name, InfluenceNetwork.fromFile(file, filetype, withWeights).
         restrictSize(MAX_GRAPH_SIZE))
 
-  class GeneratedCase(val generator: GraphGenerator, val size: Int) extends 
-      ExperimentCase(generator.getClass().getSimpleName(),
-    new InfluenceNetwork(generator.generateGraph(1 to size)))
+  class GeneratedCase(val generator: GraphGenerator, val size: Int) 
+      extends ExperimentCase(generator.getClass().getSimpleName(),
+    new InfluenceNetwork(generator.generateGraph[Int](1 to size)))
 
   val TXT_PATH = "../graphs/txt/"
   val cases = Iterable(new DataCase("football", "../graphs/gml/football.gml", GML),
         new DataCase("dolphins", "../graphs/gml/dolphins.gml", GML),
         new DataCase("polbooks", "../graphs/gml/polbooks.gml", GML),
-        new DataCase("lesmiserables", "../graphs/gml/lesmiserables[W].gml", GML, true),
-        new DataCase("amazon", TXT_PATH + "amazon0302.txt", TXT),
-        new DataCase("p2pGnutella", TXT_PATH + "p2p-Gnutella04.txt", TXT),
+        new DataCase("lesmiserables", "../graphs/gml/lesmiserables[W].gml", GML, true)
+//        new DataCase("amazon", TXT_PATH + "amazon0302.txt", TXT),
+//        new DataCase("p2pGnutella", TXT_PATH + "p2p-Gnutella04.txt", TXT),
 //        new DataCase("Slashdot", TXT_PATH + "Slashdot081106.txt", TXT),
-        new DataCase("web-stanford", TXT_PATH + "web-Stanford.txt", TXT),
+//        new DataCase("web-stanford", TXT_PATH + "web-Stanford.txt", TXT),
+//        new DataCase("hep-th", "../graphs/gml/hep-th[W].gml", GML, true)
 //    new DataCase("wiki-Vote", TXT_PATH + "wiki-Vote.txt", TXT),
 //    new DataCase("email-Enron", TXT_PATH + "email-Enron.txt", TXT),
     //    new DataCase("simple.txt", TXT_PATH + "simple.txt", TXT),
     //    new GeneratedCase(new GeographicalThresholdGraphGenerator(0.9), 100),
 //    new GeneratedCase(new ErdosRandomGraphGenerator(0.3), 200),
-    new DataCase("oregon1_010331.txt", TXT_PATH + "oregon1_010331.txt", TXT))
+//    new DataCase("oregon1_010331.txt", TXT_PATH + "oregon1_010331.txt", TXT)
+        )
 
   import pl.szymonmatejczyk.competetiveShapley.common._
   
   type IN = InfluenceNetwork
-  val greedyLDAGHeuristic = new InfluenceHeuristic("greedyLdag", (in : IN) => (k : Int) => 
-        in.greedyMostInfluentSearch(k, Some(LDAG_THRESHOLD)))
+  val greedyLDAGHeuristic = GreedyLDAGTopNodes.influenceHeuristicForSequenceOfK(LDAG_THRESHOLD)
 
   val heuristics = List(
-      new InfluenceHeuristic("ldagBI", (in : IN) => (k : Int) => 
-        in.computeBIRanking(LDAG_THRESHOLD, BI_ITER_NO).take(k).map(_._1)),
-      new InfluenceHeuristic("ldagSV", (in : IN) => (k : Int) => in.computeSVRanking(SV_ITER_NO,
-          LDAG_THRESHOLD).take(k).map(_._1)),
-      FringeGameSV.influenceHeuristic,
+      LDAGBanzhafIndex.influenceHeuristicForSequenceOfK(BI_ITER_NO, LDAG_THRESHOLD),
+      LDAGShapleyValue.influenceHeuristicForSequenceOfK(SV_ITER_NO, LDAG_THRESHOLD),
+      FringeGameSV.influenceHeuristicForSequenceOfK,
 //      KFringeGameSV.influenceHeuristic(3),
-      DistanceCutoffGameSV.influenceHeuristic(1.0),
-      InfluenceAboveThresholdGameSV.influenceHeuristic(1.0),
-      CelfPlusPlus.influenceHeuristic(MC_RUNS),
-      RandomNodes.influenceHeuristic(),
-      ShapleyValueWithDiscount.influenceHeuristic,
-      DegreeDiscount.influenceHeuristic()
+//      DistanceCutoffGameSV.influenceHeuristic(1.0),
+      InfluenceAboveThresholdGameSV.influenceHeuristicForSequenceOfK(1.0),
+      CelfPlusPlus.influenceHeuristicForSequenceOfK,
+      RandomNodes.influenceHeuristicForSequenceOfK,
+      ShapleyValueWithDiscount.influenceHeuristicForSequenceOfK,
+      DegreeDiscount.influenceHeuristicForSequenceOfK
       )
   
-  type TestValue = (Double, Double, Double, Double) // (ICvalue, time, greedySimilarity, LTvalue)
+  case class TestValue(val ICvalue : Double, time : Double, greedySimilarity : Double, LTvalue : Double)
   
-  case class TestResult(val caseName: String, val seedSize: Int, val values : Map[String, TestValue])
+  case class TestResult(val caseName: String, val values : mutable.Map[(String, Int), TestValue]) {
+    def this(name : String) = this(name, mutable.Map[(String, Int), TestValue]())
+  }
 
   val results = ListBuffer[TestResult]()
 
-  def performExperiment(data: ExperimentCase, seedSize: Int) : Future[TestResult] = future {
-    println("Data: " + data.name + " Seed size: " + seedSize)
-    val values = mutable.Map[String, TestValue]()
+  def performExperiment(data: ExperimentCase, seedSizes: Seq[Int]) 
+      : Future[TestResult] = future {
+    println("Data: " + data.name + " Seed sizes: " + seedSizes.mkString(","))
+    val net = data.network
+    val res = new TestResult(data.name)
     
     logger.info(s"Testing greedy (${data.name})")
-    val (greedyResult, greedyTime) = time(greedyLDAGHeuristic._2(data.network)(seedSize))
-    val greedyICQuality  = data.network.computeTotalInfluence(greedyResult)
-    val greedyLTQuality = data.network.mcLinearThresholdSeedQuality(greedyResult, MC_RUNS)
-    values += ((greedyLDAGHeuristic._1, (greedyICQuality, greedyTime.toMillis, 1.0, 
-                                         greedyLTQuality)))
+    val greedyResults = greedyLDAGHeuristic._2(data.network)(seedSizes)
     data.network.clearCache()
-    logger.info(s"Greedy(${data.name}): $greedyICQuality, $greedyTime ")
+    val greedyTimes = greedyResults.map(_._2)
+    val greedyICQualities  = greedyResults.map(x => net.computeTotalInfluence(x._1))
+    val greedyLTQualities = greedyResults.map(x => net.mcLinearThresholdSeedQuality(x._1, MC_RUNS))
+    
+    val tvs = greedyTimes.zip(greedyICQualities).zip(greedyLTQualities).map(
+        x => new TestValue(x._1._2, x._1._1.toMillis, 1.0, x._2))
+    
+    res.values ++= seedSizes.map((greedyLDAGHeuristic._1, _)).zip(tvs)
+    seedSizes.map((greedyLDAGHeuristic._1, _)).zip(tvs).foreach{
+      x => allResults.println(s"${x._1._1} ${x._1._2} ${x._2.ICvalue} ${x._2.time} " + 
+          s"${x._2.greedySimilarity} ${x._2.LTvalue}")
+    }
+    allResults.flush()
+     
+    data.network.clearCache()
+    greedyICQualities.zip(greedyTimes).foreach{
+      x => logger.info(s"Greedy(${data.name}): ${x._1} time: ${x._2}")
+    }
     
     for (heuristic <- heuristics) {
       logger.info(s"Testing ${heuristic._1}(${data.name})")
-      val (result, runningTime) = time(heuristic._2(data.network)(seedSize))
+      val results = heuristic._2(data.network)(seedSizes)
       data.network.clearCache()
-      val ICquality = data.network.computeTotalInfluence(result)
-      val LTquality = data.network.mcLinearThresholdSeedQuality(result, MC_RUNS)
-      val greedySimilarity = setSimilarity(greedyResult.toSet, result.toSet)
-      values += ((heuristic._1, (ICquality, runningTime.toMillis, greedySimilarity, LTquality)))
+      val times = results.map(_._2)
+      val ICqualities = results.map(x => net.computeTotalInfluence(x._1))
+      val LTqualities = results.map(x => net.mcLinearThresholdSeedQuality(x._1, MC_RUNS))
+      val similarities = results.map(_._1).zip(greedyResults.map(_._1)).map(
+          x => setSimilarity(x._1.toSet, x._2.toSet))
+
+      val tvs = (ICqualities.zip(times)).zip(similarities.zip(LTqualities)).map(
+        x => new TestValue(x._1._1, x._1._2.toMillis, x._2._1, x._2._2))
+      seedSizes.map((heuristic._1, _)).zip(tvs).foreach {
+        x =>
+          allResults.println(s"${x._1._1} ${x._1._2} ${x._2.ICvalue} ${x._2.time} " +
+            s"${x._2.greedySimilarity} ${x._2.LTvalue}")
+      }
+      allResults.flush()
+      res.values ++= seedSizes.map((heuristic._1, _)).zip(tvs)
       data.network.clearCache()
-      logger.info(s"${heuristic._1}(${data.name}): $ICquality, $runningTime, $greedySimilarity")
+      ICqualities.zip(times).foreach {
+        x => logger.info(s"${heuristic._1}(${data.name}): ${x._1} time: ${x._2}")
+      }
     }
-    
-    new TestResult(data.name, seedSize, values)
+    res
   }
 
   val futures = for (
     data <- cases
   ) yield {
-    val future = SEED_PERCENT_RANGE.foldLeft(Future { List[TestResult]() }) {
-      case (future, seedSize) => future.flatMap(
-        x => performExperiment(data, data.network.size * seedSize / 100).map {
-          case testResult => testResult :: x
-        }.recover {
+    val future = performExperiment(data, SEED_PERCENT_RANGE.map(_ * data.network.size / 100))
+    future.onFailure {
           case e: Throwable =>
-            logger.warn(s"Experiment ${data.name} seed size: $seedSize failed.")
+            logger.warn(s"Experiment ${data.name} failed.")
             logger.warn(e.getMessage())
             logger.warn(e.getStackTraceString)
-            x
-        })
     }
     future.onSuccess {
-      case listOfResults =>
+      case result =>
         logger.info(s"Printing results ${data.name}")
         val filename = data.name.replace(".", "_")
         printResultsToFile(s"$resultsDirectory/$filename.res",
-          listOfResults)
+          result)
         printResultsToFile(s"$resultsDirectory/${filename}_times.res",
-          listOfResults, (_._2))
+          result, (_.time))
         printResultsToFile(s"$resultsDirectory/${filename}_greedySimilarities.res",
-          listOfResults, (_._3))
+          result, (_.greedySimilarity))
         printResultsToFile(s"$resultsDirectory/${filename}_lt.res",
-          listOfResults, (_._4))
+          result, (_.LTvalue))
     }
     future
   }
   
   Await.result(Future.sequence(futures), Duration.Inf)
+  allResults.close()
 
-  def printResultsToFile(filename : String, results : List[TestResult], 
-      unpack : TestValue => Double = (_._1)) {
-    val resultsMap = results.groupBy(_.seedSize)
-    val seedSizesSorted = results.map(_.seedSize).sorted
+  def printResultsToFile(filename : String, result : TestResult, 
+      unpack : TestValue => Double = (_.ICvalue)) {
+    val seedSizesSorted = result.values.keys.map(_._2).toList.sorted
     val writer = new PrintWriter(new File(filename))
     
     def aligningSpaces(s : String) = " " * (20 - s.size)
@@ -181,7 +210,7 @@ object GreedySVBIExperiment extends App with Logging {
     writer.println(s"${stringAligned("seedSize")}\t" + seedSizesSorted.mkString("\t"))
     (greedyLDAGHeuristic :: heuristics).foreach{
       heuristic =>
-        val resultsSorted = seedSizesSorted.map(x => unpack(resultsMap(x).head.values(heuristic._1)))
+        val resultsSorted = seedSizesSorted.map(x => unpack(result.values((heuristic._1, x))))
           .mkString("\t")
         writer.println(stringAligned(heuristic._1) + "\t" + resultsSorted)
     }
