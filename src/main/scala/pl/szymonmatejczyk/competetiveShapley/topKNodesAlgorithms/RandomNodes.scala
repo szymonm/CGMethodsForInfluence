@@ -8,20 +8,32 @@ import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 trait RandomNodes {
   self : InfluenceNetwork =>
     
-  def kRandomNodes(k : Int) : Seq[Int] = {
-    if (k > g.nodes.size)
-      throw new IllegalArgumentException("Not enough nodes in the graph.")
+  def randomNodes() : Stream[Int] = {
     val randomOrdering = Ordering.by[Int, Double](_ => r.nextDouble)
     val randomOrderQueue = mutable.PriorityQueue[Int]()(randomOrdering) ++= g.nodes.map(_.value)
-    val nodesSet = mutable.ListBuffer[Int]()
-    while (nodesSet.size < k) {
-      nodesSet += randomOrderQueue.dequeue
+    
+    def getNext() : Int = {
+      randomOrderQueue.dequeue
     }
-    nodesSet
+    
+    def getStream() : Stream[Int] = {
+      if (randomOrderQueue.isEmpty) {
+        logger.warn("Nodes finished")
+        Stream.empty
+      } else {
+        getNext() #:: getStream()
+      }
+    }
+    
+    getStream()
   }
 }
 
 object RandomNodes {
-  def influenceHeuristic(): InfluenceHeuristic = new InfluenceHeuristic("random",
-    (in: IN) => (k: Int) => in.kRandomNodes(k))
+  val NAME = "random"
+  def influenceHeuristic: InfluenceHeuristic = new InfluenceHeuristic(NAME,
+    (in: IN) => (k: Int) => in.randomNodes().take(k))
+  
+  def influenceHeuristicForSequenceOfK = streamToInfluenceHeuristic(NAME,
+    (in: InfluenceNetwork) => in.randomNodes)
 }
