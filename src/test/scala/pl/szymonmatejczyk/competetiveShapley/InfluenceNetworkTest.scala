@@ -67,7 +67,7 @@ class InfluenceNetworkTest extends FlatSpec with ShouldMatchers {
 	
 	"greedy influence algorithm" should "be good" in {
 	  gNet.threshold = 0.3
-	  gNet.greedyMostInfluentSearch(3) shouldEqual List(3, 4, 1)
+	  gNet.ldagGreedyTopNodes().take(3) shouldEqual List(3, 4, 1)
 	  gNet.threshold = 0.1
 	  gNet.computeTotalInfluence(Set(3,4,1)) should be  (5.03 plusOrMinus 0.1)
 	}
