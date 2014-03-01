@@ -71,24 +71,33 @@ object GreedySVBIExperiment extends App with Logging {
   class GeneratedCase(val generator: GraphGenerator, val size: Int) 
       extends ExperimentCase(generator.getClass().getSimpleName(),
     new InfluenceNetwork(generator.generateGraph[Int](1 to size)))
-
-  val TXT_PATH = "../graphs/txt/"
-  val cases = Iterable(new DataCase("football", "../graphs/gml/football.gml", GML),
+  
+  val smallCases = List(new DataCase("football", "../graphs/gml/football.gml", GML),
         new DataCase("dolphins", "../graphs/gml/dolphins.gml", GML),
         new DataCase("polbooks", "../graphs/gml/polbooks.gml", GML),
         new DataCase("lesmiserables", "../graphs/gml/lesmiserables[W].gml", GML, true)
-//        new DataCase("amazon", TXT_PATH + "amazon0302.txt", TXT),
-//        new DataCase("p2pGnutella", TXT_PATH + "p2p-Gnutella04.txt", TXT),
-//        new DataCase("Slashdot", TXT_PATH + "Slashdot081106.txt", TXT),
-//        new DataCase("web-stanford", TXT_PATH + "web-Stanford.txt", TXT),
-//        new DataCase("hep-th", "../graphs/gml/hep-th[W].gml", GML, true)
+      )
+  
+  val bigCases = List(
+    new DataCase("amazon", TXT_PATH + "amazon0302.txt", TXT),
+    new DataCase("p2pGnutella", TXT_PATH + "p2p-Gnutella04.txt", TXT),
+//    new DataCase("Slashdot", TXT_PATH + "Slashdot081106.txt", TXT),
+    new DataCase("web-stanford", TXT_PATH + "web-Stanford.txt", TXT),
+    new DataCase("hep-th", "../graphs/gml/hep-th[W].gml", GML, true)
 //    new DataCase("wiki-Vote", TXT_PATH + "wiki-Vote.txt", TXT),
-//    new DataCase("email-Enron", TXT_PATH + "email-Enron.txt", TXT),
-    //    new DataCase("simple.txt", TXT_PATH + "simple.txt", TXT),
-    //    new GeneratedCase(new GeographicalThresholdGraphGenerator(0.9), 100),
-//    new GeneratedCase(new ErdosRandomGraphGenerator(0.3), 200),
+//    new DataCase("email-Enron", TXT_PATH + "email-Enron.txt", TXT)
 //    new DataCase("oregon1_010331.txt", TXT_PATH + "oregon1_010331.txt", TXT)
-        )
+    )
+  
+  val randomCases = List(
+    new GeneratedCase(new GeographicalThresholdGraphGenerator(0.9), 100),
+    new GeneratedCase(new ErdosRandomGraphGenerator(0.3), 200)
+    )
+  
+  val others = List(new DataCase("simple.txt", TXT_PATH + "simple.txt", TXT))
+
+  val TXT_PATH = "../graphs/txt/"
+  val cases = List[DataCase]()
 
   import pl.szymonmatejczyk.competetiveShapley.common._
   
