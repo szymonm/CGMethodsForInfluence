@@ -1,6 +1,6 @@
 name := "Competetive shapley"
 
-version := "0.1"
+version := "0.3"
 
 scalaVersion := "2.10.2"
 
@@ -19,6 +19,8 @@ EclipseKeys.withSource := true
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.0.9"
 
 lazy val logback = "ch.qos.logback" % "logback-classic" % "1.0.9"
+
+libraryDependencies += "com.typesafe" % "config" % "1.2.1"
 
 parallelExecution in Test := false
 

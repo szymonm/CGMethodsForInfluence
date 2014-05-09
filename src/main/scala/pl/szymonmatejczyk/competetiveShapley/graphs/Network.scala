@@ -30,7 +30,7 @@ class Network[N, E[X] <: EdgeLikeIn[X]](val graph: Graph[N, E],
     iterations: Int = 1000): Double = {
     (0 until iterations).iterator.map {
       case i =>
-        val coalition = graph.nodes.toOuterNodes.toSet.filter(_ => Random.nextBoolean)
+        val coalition = graph.nodes.toOuterNodes.toSet.filter(_ => Random.nextBoolean())
         payoff(coalition + node) - payoff(coalition - node)
     }.sum / iterations
   }

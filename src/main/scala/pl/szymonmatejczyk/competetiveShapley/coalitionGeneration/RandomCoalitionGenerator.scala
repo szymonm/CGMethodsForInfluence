@@ -21,7 +21,7 @@ class RandomCoalitionGenerator(val from: Set[Int], coalitions: Int) extends Coal
   }
 
   private def randomSubset(): Set[Int] = {
-    val res = from.filter(_ => r.nextBoolean)
+    val res = from.filter(_ => r.nextBoolean())
     res
   }
 }

@@ -35,93 +35,27 @@ import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.GreedyLDAGTopNodes
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGShapleyValue
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGBanzhafIndex
+import com.typesafe.config.ConfigFactory
 
 object GreedySVBIExperiment extends App with Logging {
-  val heapSize = java.lang.Runtime.getRuntime().maxMemory();
-  val hostname = InetAddress.getLocalHost().getHostName()
-
-  if (heapSize < 198974848)
-    logger.warn(s"Max heap size($heapSize) may be to small.")
-    
-  val WEIGHT_DENOMINATOR = 10000L
-  
-  val LDAG_THRESHOLD = 1.0 / 320.0
-
-  val BI_ITER_NO = 1000
-  val SV_ITER_NO = 200
-  
-  val MC_RUNS = 10000
+  val config = ConfigFactory.load()
+  val settings = new Settings(config)
   
   def SEED_PERCENT_RANGE = Range(2, 32,  4)
-  
-  val resultsDirectory = if (args.size > 0) args(0) else s"results$hostname"
-  (new File(resultsDirectory)).mkdir()
-  
-  val allResults = new PrintWriter(new File(resultsDirectory + "/all.res"))
-  
-  val MAX_GRAPH_SIZE = if (args.size > 1) args(1).toInt else 2000
 
-  class ExperimentCase(val name: String, val network: InfluenceNetwork)
+  new File(settings.resultsDirectory).mkdirs()
+  
+  val allResults = new PrintWriter(new File(settings.resultsDirectory + "/all.res"))
 
-  class DataCase(name: String, val file: String, val filetype: FileType,
-    val withWeights: Boolean = false)
-    extends ExperimentCase(name, InfluenceNetwork.fromFile(file, filetype, withWeights).
-        restrictSize(MAX_GRAPH_SIZE))
+  val cases = settings.testedCases
 
-  class GeneratedCase(val generator: GraphGenerator, val size: Int) 
-      extends ExperimentCase(generator.getClass().getSimpleName(),
-    new InfluenceNetwork(generator.generateGraph[Int](1 to size)))
-  
-  val TXT_PATH = "../graphs/txt/"
-    
-  val smallCases = List(new DataCase("football", "../graphs/gml/football.gml", GML),
-        new DataCase("dolphins", "../graphs/gml/dolphins.gml", GML),
-        new DataCase("polbooks", "../graphs/gml/polbooks.gml", GML),
-        new DataCase("lesmiserables", "../graphs/gml/lesmiserables[W].gml", GML, true)
-      )
-  
-  val bigCases = List(
-//    new DataCase("amazon", TXT_PATH + "amazon0302.txt", TXT),
-//    new DataCase("p2pGnutella", TXT_PATH + "p2p-Gnutella04.txt", TXT),
-//    new DataCase("Slashdot", TXT_PATH + "Slashdot081106.txt", TXT),
-//    new DataCase("web-stanford", TXT_PATH + "web-Stanford.txt", TXT),
-    new DataCase("hep-th", "../graphs/gml/hep-th[W].gml", GML, true)
-//    new DataCase("wiki-Vote", TXT_PATH + "wiki-Vote.txt", TXT),
-//    new DataCase("email-Enron", TXT_PATH + "email-Enron.txt", TXT)
-//    new DataCase("oregon1_010331.txt", TXT_PATH + "oregon1_010331.txt", TXT)
-    )
-  
-  val randomCases = List(
-    new GeneratedCase(new GeographicalThresholdGraphGenerator(0.9), 100),
-    new GeneratedCase(new ErdosRandomGraphGenerator(0.3), 200)
-    )
-  
-  val others = List(new DataCase("simple.txt", TXT_PATH + "simple.txt", TXT))
-
-  val cases = List[DataCase]() ++ List(new DataCase("hep-th", "../graphs/gml/hep-th[W].gml", GML, true))
-
-  import pl.szymonmatejczyk.competetiveShapley.common._
-  
-  type IN = InfluenceNetwork
   val referenceHeuristic = RandomNodes.influenceHeuristicForSequenceOfK 
 
-
-  val heuristics = List(
-//    GreedyLDAGTopNodes.influenceHeuristicForSequenceOfK(LDAG_THRESHOLD)
-//      LDAGBanzhafIndex.influenceHeuristicForSequenceOfK(BI_ITER_NO, LDAG_THRESHOLD)
-//      LDAGShapleyValue.influenceHeuristicForSequenceOfK(SV_ITER_NO, LDAG_THRESHOLD),
-      FringeGameSV.influenceHeuristicForSequenceOfK,
-//      KFringeGameSV.influenceHeuristic(3),
-//      DistanceCutoffGameSV.influenceHeuristic(1.0),
-//      InfluenceAboveThresholdGameSV.influenceHeuristicForSequenceOfK(1.0)
-//      CelfPlusPlus.influenceHeuristicForSequenceOfK,
-      DegreeDiscount.influenceHeuristicForSequenceOfK,
-      ShapleyValueWithDiscount.influenceHeuristicForSequenceOfK
-      )
+  val algorithms = settings.algorithms
   
-  case class TestValue(val ICvalue : Double, time : Double, greedySimilarity : Double, LTvalue : Double)
+  case class TestValue(ICvalue : Double, time : Double, greedySimilarity : Double, LTvalue : Double)
   
-  case class TestResult(val caseName: String, val values : mutable.Map[(String, Int), TestValue]) {
+  case class TestResult(caseName: String, values : mutable.Map[(String, Int), TestValue]) {
     def this(name : String) = this(name, mutable.Map[(String, Int), TestValue]())
   }
 
@@ -138,7 +72,7 @@ object GreedySVBIExperiment extends App with Logging {
     data.network.clearCache()
     val refTimes = refResults.map(_._2)
     val refICQualities  = refResults.map(x => net.computeTotalInfluence(x._1))
-    val refLTQualities = refResults.map(x => net.mcLinearThresholdSeedQuality(x._1, MC_RUNS))
+    val refLTQualities = refResults.map(x => net.mcLinearThresholdSeedQuality(x._1, settings.MC_RUNS))
     
     val tvs = refTimes.zip(refICQualities).zip(refLTQualities).map(
         x => new TestValue(x._1._2, x._1._1.toMillis, 1.0, x._2))
@@ -155,17 +89,17 @@ object GreedySVBIExperiment extends App with Logging {
       x => logger.info(s"${referenceHeuristic._1}(${data.name}): ${x._1} time: ${x._2}")
     }
     
-    for (heuristic <- heuristics) {
+    for (heuristic <- algorithms) {
       logger.info(s"Testing ${heuristic._1}(${data.name})")
       val results = heuristic._2(data.network)(seedSizes)
       data.network.clearCache()
       val times = results.map(_._2)
       val ICqualities = results.map(x => net.computeTotalInfluence(x._1))
-      val LTqualities = results.map(x => net.mcLinearThresholdSeedQuality(x._1, MC_RUNS))
+      val LTqualities = results.map(x => net.mcLinearThresholdSeedQuality(x._1, settings.MC_RUNS))
       val similarities = results.map(_._1).zip(refResults.map(_._1)).map(
           x => setSimilarity(x._1.toSet, x._2.toSet))
 
-      val tvs = (ICqualities.zip(times)).zip(similarities.zip(LTqualities)).map(
+      val tvs = ICqualities.zip(times).zip(similarities.zip(LTqualities)).map(
         x => new TestValue(x._1._1, x._1._2.toMillis, x._2._1, x._2._2))
       seedSizes.map((heuristic._1, _)).zip(tvs).foreach {
         x =>
@@ -189,20 +123,20 @@ object GreedySVBIExperiment extends App with Logging {
     future.onFailure {
           case e: Throwable =>
             logger.warn(s"Experiment ${data.name} failed.")
-            logger.warn(e.getMessage())
+            logger.warn(e.getMessage)
             logger.warn(e.getStackTraceString)
     }
     future.map {
       case result =>
         logger.info(s"Printing results ${data.name}")
         val filename = data.name.replace(".", "_")
-        printResultsToFile(s"$resultsDirectory/$filename.res",
+        printResultsToFile(s"${settings.resultsDirectory}/$filename.res",
           result)
-        printResultsToFile(s"$resultsDirectory/${filename}_times.res",
+        printResultsToFile(s"${settings.resultsDirectory}/${filename}_times.res",
           result, (_.time))
-        printResultsToFile(s"$resultsDirectory/${filename}_greedySimilarities.res",
+        printResultsToFile(s"${settings.resultsDirectory}/${filename}_greedySimilarities.res",
           result, (_.greedySimilarity))
-        printResultsToFile(s"$resultsDirectory/${filename}_lt.res",
+        printResultsToFile(s"${settings.resultsDirectory}/${filename}_lt.res",
           result, (_.LTvalue))
         logger.info(s"Results printed ${data.name}")
     }
@@ -219,7 +153,7 @@ object GreedySVBIExperiment extends App with Logging {
     def aligningSpaces(s : String) = " " * (20 - s.size)
     def stringAligned(s : String) = s + aligningSpaces(s)
     writer.println(s"${stringAligned("seedSize")}\t" + seedSizesSorted.mkString("\t"))
-    (referenceHeuristic :: heuristics).foreach{
+    (referenceHeuristic :: algorithms).foreach{
       heuristic =>
         val resultsSorted = seedSizesSorted.map(x => unpack(result.values((heuristic._1, x))))
           .mkString("\t")

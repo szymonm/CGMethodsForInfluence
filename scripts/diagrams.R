@@ -7,7 +7,7 @@ data <- read.table(args[1])
 
 source("plotDiagram.R")
 
-png(paste(filename,".png", sep=""))
+pdf(paste(filename,".pdf", sep=""))
 plotDiagram(args[2], data)
 dev.off()
 

@@ -1,9 +1,6 @@
 package pl.szymonmatejczyk.competetiveShapley
 
 import collection._
-import scala.collection.mutable.PriorityQueue
-import scala.collection.immutable.SortedSet
-import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
 
 package object common {
   def doubleToLong(x: Double, denominator: Long) = (x * denominator).toLong
@@ -12,7 +9,6 @@ package object common {
   
   def rankFromMap[K](map : Map[K, Double]) : Seq[K] = {
     map.toSeq.sortBy(-_._2).map(_._1)
-//    (SortedSet[(K, Double)]()(Ordering.by[(K, Double), Double](-_._2)) ++ map).map(_._1).toSeq
   }
   
   def topKFromMap[K](k : Int, map : Map[K, Double]) : Seq[K] = {

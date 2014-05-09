@@ -6,7 +6,7 @@ class AllPermutationsGenerator[T](val s: Set[T]) extends PermutationGenerator[T]
     if (s.isEmpty) return None
 
     if (iter.hasNext)
-      Some(iter.next)
+      Some(iter.next())
     else
       None
   }
