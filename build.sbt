@@ -2,13 +2,13 @@ name := "Competetive shapley"
 
 version := "0.3"
 
-scalaVersion := "2.10.2"
+scalaVersion := "2.11.2"
 
 scalacOptions ++= Seq("-unchecked", "-deprecation")
 
-libraryDependencies += "com.assembla.scala-incubator" % "graph-core_2.10" % "1.7.3"
+libraryDependencies += "com.assembla.scala-incubator" % "graph-core_2.11" % "1.9.0"
 
-libraryDependencies += "org.scalatest" % "scalatest_2.10" % "1.9.2" % "test"
+libraryDependencies += "org.scalatest" % "scalatest_2.11" % "2.2.1" % "test"
 
 libraryDependencies += "junit" % "junit" % "4.10" % "test"
 
@@ -26,5 +26,3 @@ parallelExecution in Test := false
 
 javaOptions in run += "-Xmx4G"
 
-// One jar sbt plugin settings
-seq(com.github.retronym.SbtOneJar.oneJarSettings: _*)

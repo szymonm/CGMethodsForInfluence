@@ -41,9 +41,9 @@ class Settings(config: Config) extends Logging {
 
   val smallCases = unweightedGML ++ weightedGML
 
-  private val bigUnweightedTXT = config.getStringList("experiments.bigCases.unweighted.txt")
+  private val bigUnweightedTXT: Seq[DataCase] = config.getStringList("experiments.bigCases.unweighted.txt")
     .map(x => DataCase(getFileName(x), x, TXT))
-  private val bigWeightedGML = config.getStringList("experiments.bigCases.weighted.gml")
+  private val bigWeightedGML: Seq[DataCase] = config.getStringList("experiments.bigCases.weighted.gml")
     .map(x => DataCase(getFileName(x), x, GML, withWeights = true))
 
   val bigCases = bigUnweightedTXT ++ bigWeightedGML
@@ -58,7 +58,7 @@ class Settings(config: Config) extends Logging {
 
   val others = List(DataCase("simple.txt", "../graphs/txt/simple.txt", TXT))
 
-  val testedCases = List[ExperimentCase]() ++
+  val testedCases: Seq[ExperimentCase] = Seq[ExperimentCase]() ++
     (if (includeSmallCases) smallCases else List()) ++
     (if (includeBigCases) bigCases else List())
 
