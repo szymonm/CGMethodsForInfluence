@@ -1,15 +1,15 @@
 package pl.szymonmatejczyk.competetiveShapley.experiments
 
 import com.typesafe.config.Config
-import java.net.InetAddress
 import com.typesafe.scalalogging.slf4j.Logging
+import java.net.InetAddress
+import pl.szymonmatejczyk.competetiveShapley.InfluenceHeuristicForSequenceOfK
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader.{TXT, GML}
-import scala.collection.JavaConversions._
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.{InfluenceAboveThresholdGameSV, FringeGameSV}
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.{ErdosRandomGraphGenerator, GeographicalThresholdGraphGenerator}
-import pl.szymonmatejczyk.competetiveShapley.michalakGames.{KFringeGameSV, InfluenceAboveThresholdGameSV, DistanceCutoffGameSV, FringeGameSV}
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.{cg, CelfPlusPlus, GreedyLDAGTopNodes, DegreeDiscount}
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms._
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.{LDAGShapleyValue, LDAGBanzhafIndex, ShapleyValueWithDiscount}
-import pl.szymonmatejczyk.competetiveShapley.{InfluenceHeuristicForSequenceOfK, InfluenceHeuristic}
+import scala.collection.JavaConversions._
 
 class Settings(config: Config) extends Logging {
 
@@ -21,7 +21,7 @@ class Settings(config: Config) extends Logging {
 
   val resultsDirectory = config.getString("experiments.resultsDirectory") + hostname
 
-  val WEIGHT_DENOMINATOR = config.getLong("graph.weightDenominator")
+//  val WEIGHT_DENOMINATOR = config.getLong("graph.weightDenominator")
 
   val LDAG_THRESHOLD = config.getDouble("graph.ldagThreshold")
 
@@ -56,7 +56,7 @@ class Settings(config: Config) extends Logging {
     new GeneratedCase(new ErdosRandomGraphGenerator(0.3), 200)
   )
 
-  val others = List(new DataCase("simple.txt", "../graphs/txt/simple.txt", TXT))
+  val others = List(DataCase("simple.txt", "../graphs/txt/simple.txt", TXT))
 
   val testedCases = List[ExperimentCase]() ++
     (if (includeSmallCases) smallCases else List()) ++
@@ -74,4 +74,6 @@ class Settings(config: Config) extends Logging {
     DegreeDiscount.influenceHeuristicForSequenceOfK,
     ShapleyValueWithDiscount.influenceHeuristicForSequenceOfK
   )
+
+  val referenceHeuristic = RandomNodes.influenceHeuristicForSequenceOfK
 }

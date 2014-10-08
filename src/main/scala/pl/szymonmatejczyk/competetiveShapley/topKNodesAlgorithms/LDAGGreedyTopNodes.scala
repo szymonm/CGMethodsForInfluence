@@ -1,9 +1,9 @@
 package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
 
-import pl.szymonmatejczyk.competetiveShapley.InfluenceComputation
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import scala.annotation.tailrec
 import pl.szymonmatejczyk.competetiveShapley.InfluenceHeuristic
+import pl.szymonmatejczyk.competetiveShapley.ldags.InfluenceComputation
 
 trait LDAGGreedyTopNodes extends InfluenceComputation {
   def threshold: Double

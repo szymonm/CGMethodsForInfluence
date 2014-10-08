@@ -21,7 +21,7 @@ trait InfluenceAboveThresholdGameSV {
    * For each v, sum of weights of incoming edges.
    */
   def alphas(f : (Double => Double) = identity[Double]) : M = {
-    g.nodes.map{
+    graph.nodes.map{
       x => (x.value, x.incoming.map(e => f(e.weight / weightDenominator)).sum)
     }.toMap  
   }
@@ -44,19 +44,19 @@ trait InfluenceAboveThresholdGameSV {
   
   def computeSingleSV(node : Int, cutoff : M, alpha : M, beta : M) : Double = {
     var res = 0.0
-    val inDegree = g.get(node).inDegree
+    val inDegree = graph.get(node).inDegree
     0.until(inDegree).foreach{
       m => res += pii(m, inDegree, node, alpha, beta, cutoff)/ (1.0 + inDegree)
     }
-    g.get(node).inNeighbors.foreach {
+    graph.get(node).inNeighbors.foreach {
       neighbour =>
         var p = 0.0
         0.to(neighbour.inDegree).foreach{
           m =>
             if (neighbour.inDegree <= 2) {
-              p += 1 / 2 * g.get(node).findOutgoingTo(neighbour).fold(0.0)(_.weight) // 1/2 * wij
+              p += 1 / 2 * graph.get(node).findOutgoingTo(neighbour).fold(0.0)(_.weight) // 1/2 * wij
             } else {
-              val wij = g.get(node).findOutgoingTo(neighbour).fold(0.0)(_.weight)
+              val wij = graph.get(node).findOutgoingTo(neighbour).fold(0.0)(_.weight)
               val mi = m / (neighbour.inDegree - 1) * (alpha(neighbour) - wij)
               val sigma = m * (neighbour.inDegree - 1 - m) / ((neighbour.inDegree - 1) *
                 (neighbour.inDegree - 2)) * (beta(neighbour) - wij * wij) -
@@ -75,7 +75,7 @@ trait InfluenceAboveThresholdGameSV {
     val alpha = alphas()
     val beta = betas()
     
-    g.nodes.toOuterNodes.par.map{x => (x, computeSingleSV(x, cutoff, alpha, beta))}.toMap.seq
+    graph.nodes.toOuterNodes.par.map{x => (x, computeSingleSV(x, cutoff, alpha, beta))}.toMap.seq
   }
 }
 

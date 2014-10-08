@@ -6,7 +6,7 @@ import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GraphGenerator
 package object experiments {
   case class GraphSizeRestriction(maxSize : Int)
 
-  class ExperimentCase(val name: String, val network: InfluenceNetwork)
+  sealed class ExperimentCase(val name: String, val network: InfluenceNetwork)
 
   case class DataCase(override val name: String, file: String, filetype: FileType,
                  withWeights: Boolean = false)(implicit restriction: GraphSizeRestriction)

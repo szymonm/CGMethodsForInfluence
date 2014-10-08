@@ -2,7 +2,7 @@ package pl.szymonmatejczyk.competetiveShapley.experiments
 
 import java.io.PrintWriter
 import java.io.File
-import java.nio.file.{Path, Paths, Files}
+import java.nio.file.Files
 import scala.collection._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent._
@@ -11,30 +11,8 @@ import ExecutionContext.Implicits.global
 import com.typesafe.scalalogging.slf4j.Logging
 import pl.szymonmatejczyk.competetiveShapley.utils._
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils.time
-import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader._
-import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
-import pl.szymonmatejczyk.competetiveShapley.randomGraphs.ErdosRandomGraphGenerator
-import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GraphGenerator
-import pl.szymonmatejczyk.competetiveShapley.randomGraphs.GeographicalThresholdGraphGenerator
-import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
-import pl.szymonmatejczyk.competetiveShapley.common._
-import pl.szymonmatejczyk.competetiveShapley._
-import pl.szymonmatejczyk.competetiveShapley.michalakGames.FringeGameSV
-import pl.szymonmatejczyk.competetiveShapley.michalakGames.DistanceCutoffGameSV
-import pl.szymonmatejczyk.competetiveShapley.michalakGames.InfluenceAboveThresholdGameSV
-import pl.szymonmatejczyk.competetiveShapley.michalakGames.DistanceCutoffGameSV
-import pl.szymonmatejczyk.competetiveShapley.michalakGames.KFringeGameSV
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.CelfPlusPlus
-import java.net.InetAddress
 import scala.util.Success
-import scala.util.Failure
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.RandomNodes
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.ShapleyValueWithDiscount
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.GreedyLDAGTopNodes
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGShapleyValue
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGBanzhafIndex
 import com.typesafe.config.ConfigFactory
 
 object GreedySVBIExperiment extends App with Logging {
@@ -48,8 +26,6 @@ object GreedySVBIExperiment extends App with Logging {
   val allResults = new PrintWriter(new File(settings.resultsDirectory + "/all.res"))
 
   val cases = settings.testedCases
-
-  val referenceHeuristic = RandomNodes.influenceHeuristicForSequenceOfK 
 
   val algorithms = settings.algorithms
   
@@ -67,8 +43,8 @@ object GreedySVBIExperiment extends App with Logging {
     val net = data.network
     val res = new TestResult(data.name)
     
-    logger.info(s"Testing ${referenceHeuristic._1} (${data.name})")
-    val refResults = referenceHeuristic._2(data.network)(seedSizes)
+    logger.info(s"Testing ${settings.referenceHeuristic._1} (${data.name})")
+    val refResults = settings.referenceHeuristic._2(data.network)(seedSizes)
     data.network.clearCache()
     val refTimes = refResults.map(_._2)
     val refICQualities  = refResults.map(x => net.computeTotalInfluence(x._1))
@@ -77,8 +53,8 @@ object GreedySVBIExperiment extends App with Logging {
     val tvs = refTimes.zip(refICQualities).zip(refLTQualities).map(
         x => new TestValue(x._1._2, x._1._1.toMillis, 1.0, x._2))
     
-    res.values ++= seedSizes.map((referenceHeuristic._1, _)).zip(tvs)
-    seedSizes.map((referenceHeuristic._1, _)).zip(tvs).foreach{
+    res.values ++= seedSizes.map((settings.referenceHeuristic._1, _)).zip(tvs)
+    seedSizes.map((settings.referenceHeuristic._1, _)).zip(tvs).foreach{
       x => allResults.println(s"${x._1._1} ${x._1._2} ${x._2.ICvalue} ${x._2.time} " + 
           s"${x._2.greedySimilarity} ${x._2.LTvalue}")
     }
@@ -86,7 +62,7 @@ object GreedySVBIExperiment extends App with Logging {
      
     data.network.clearCache()
     refICQualities.zip(refTimes).foreach{
-      x => logger.info(s"${referenceHeuristic._1}(${data.name}): ${x._1} time: ${x._2}")
+      x => logger.info(s"${settings.referenceHeuristic._1}(${data.name}): ${x._1} time: ${x._2}")
     }
     
     for (heuristic <- algorithms) {
@@ -133,11 +109,11 @@ object GreedySVBIExperiment extends App with Logging {
         printResultsToFile(s"${settings.resultsDirectory}/$filename.res",
           result)
         printResultsToFile(s"${settings.resultsDirectory}/${filename}_times.res",
-          result, (_.time))
+          result, _.time)
         printResultsToFile(s"${settings.resultsDirectory}/${filename}_greedySimilarities.res",
-          result, (_.greedySimilarity))
+          result, _.greedySimilarity)
         printResultsToFile(s"${settings.resultsDirectory}/${filename}_lt.res",
-          result, (_.LTvalue))
+          result, _.LTvalue)
         logger.info(s"Results printed ${data.name}")
     }
   }
@@ -146,14 +122,14 @@ object GreedySVBIExperiment extends App with Logging {
   allResults.close()
 
   def printResultsToFile(filename : String, result : TestResult, 
-      unpack : TestValue => Double = (_.ICvalue)) {
+      unpack : TestValue => Double = _.ICvalue) {
     val seedSizesSorted = result.values.keys.map(_._2).toList.sorted
     val writer = new PrintWriter(new File(filename))
     
     def aligningSpaces(s : String) = " " * (20 - s.size)
     def stringAligned(s : String) = s + aligningSpaces(s)
     writer.println(s"${stringAligned("seedSize")}\t" + seedSizesSorted.mkString("\t"))
-    (referenceHeuristic :: algorithms).foreach{
+    (settings.referenceHeuristic :: algorithms).foreach{
       heuristic =>
         val resultsSorted = seedSizesSorted.map(x => unpack(result.values((heuristic._1, x))))
           .mkString("\t")

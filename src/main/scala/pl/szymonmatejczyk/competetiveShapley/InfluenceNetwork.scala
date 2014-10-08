@@ -1,46 +1,30 @@
 package pl.szymonmatejczyk.competetiveShapley
 
-import scala.io.Source
-import scalax.collection.Graph
-import scalax.collection.GraphPredef._
-import scalax.collection.GraphEdge._
-import scalax.collection.edge.Implicits._
-import scalax.collection.edge.WDiEdge
-import scalax.collection.config.CoreConfig
-import scalax.collection.GraphTraversal
-import scala.util.Random
-import scala.collection.mutable.PriorityQueue
-import scala.collection._
-import scala.collection.mutable.HashMap
-import scala.collection.immutable.HashSet
-import scala.collection.mutable.ListBuffer
-import scalax.collection.GraphTraversal
-import java.io.IOException
 import com.typesafe.scalalogging.slf4j.Logging
-import com.typesafe.scalalogging.slf4j.Logger
-import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
-import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.CoalitionGenerator
-import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GMLFileReader
-import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGenerator
-import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
-import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphFromExtension
+import pl.szymonmatejczyk.competetiveShapley.graphs.SizeRestriction
 import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.LDAGGreedyTopNodes
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGBanzhafIndex
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGShapleyValue
+import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GMLFileReader
+import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
 import pl.szymonmatejczyk.competetiveShapley.ldags.InfluenceNetworkLDAGApproximation
 import pl.szymonmatejczyk.competetiveShapley.ldags.LDAGApproximation
-import pl.szymonmatejczyk.competetiveShapley.graphs.SizeRestriction
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.CelfPlusPlus
-import pl.szymonmatejczyk.competetiveShapley.liveGraphs.LiveGraph
 import pl.szymonmatejczyk.competetiveShapley.liveGraphs.IncrementalInfluence
-import pl.szymonmatejczyk.competetiveShapley.michalakGames.FringeGameSV
+import pl.szymonmatejczyk.competetiveShapley.liveGraphs.LiveGraph
 import pl.szymonmatejczyk.competetiveShapley.michalakGames.DistanceCutoffGameSV
+import pl.szymonmatejczyk.competetiveShapley.michalakGames.FringeGameSV
 import pl.szymonmatejczyk.competetiveShapley.michalakGames.InfluenceAboveThresholdGameSV
 import pl.szymonmatejczyk.competetiveShapley.michalakGames.KFringeGameSV
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.CelfPlusPlus
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.DegreeDiscount
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.LDAGGreedyTopNodes
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.RandomNodes
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGBanzhafIndex
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGShapleyValue
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.ShapleyValueWithDiscount
+import scala.collection._
+import scala.util.Random
+import scalax.collection.Graph
+import scalax.collection.config.CoreConfig
+import scalax.collection.edge.WDiEdge
 
 class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightDenominator: Double = 100000.0)
       extends WeightedDirectedNetwork(g, weightDenominator)
@@ -65,7 +49,7 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
         with ShapleyValueWithDiscount {
   implicit val config = new CoreConfig()
   
-  def this(wdn : WeightedDirectedNetwork) = this(wdn.g, wdn.weightDenominator)
+  def this(wdn : WeightedDirectedNetwork) = this(wdn.graph, wdn.weightDenominator)
   
   val r = new Random
   val DEFAULT_THRESHOLD = 0.3
@@ -91,7 +75,7 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
 
     val total = influences.all.map {
       node =>
-        (node -> influences.byFirstIterator(node).foldLeft(0.0)(add _))
+        node -> influences.byFirstIterator(node).foldLeft(0.0)(add)
     }
     collection.immutable.HashMap[Int, Double]() ++ total
   }
@@ -127,6 +111,6 @@ object InfluenceNetwork extends Logging {
   }
   
   def apply(wdn : WeightedDirectedNetwork) : InfluenceNetwork = {
-    new InfluenceNetwork(wdn.g, wdn.weightDenominator)
+    new InfluenceNetwork(wdn.graph, wdn.weightDenominator)
   }
 }

@@ -6,4 +6,7 @@ package object competetiveShapley {
   type InfluenceHeuristic = (String, (InfluenceNetwork => Int => Seq[Int]))
   type InfluenceHeuristicForSequenceOfK = (String, (InfluenceNetwork => Seq[Int] => 
     Seq[(Seq[Int], Duration)]))
+    
+    
+  type Valuation[N] = Set[N] => Double
 }

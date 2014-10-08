@@ -15,7 +15,7 @@ import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 class LinearThresholdTest extends FlatSpec with ShouldMatchers {
   "LinearThreshold" should "activate cycle" in {
     val cycle8 = WeightedDirectedNetwork.cycle(8, 10, 10)
-    val in = new InfluenceNetwork(cycle8.g, 10)
+    val in = new InfluenceNetwork(cycle8.graph, 10)
     in.mcLinearThresholdSeedQuality(Seq(1), 100) should be (8.0 plusOrMinus 0.2)
     
     in.mcLinearThresholdSeedQuality(Seq(1, 2), 100) should be (8.0 plusOrMinus 0.2)
@@ -36,7 +36,7 @@ class LinearThresholdTest extends FlatSpec with ShouldMatchers {
     in3.mcLinearThresholdSeedQuality(Seq(1), 100) should be (3.0 plusOrMinus(0.2))
     
     val inStar = new InfluenceNetwork(WeightedDirectedNetwork.starIn(9, 1, 8))
-    inStar.mcLinearThresholdSeedQuality(Seq(2,3,4,5,6,7,8,9), 100, () => 1.0) should be (
+    inStar.mcLinearThresholdSeedQuality(Seq(2,3,4,5,6,7,8,9), 10, () => 1.0) should be (
         9.0 plusOrMinus 0.01)
   }
 }

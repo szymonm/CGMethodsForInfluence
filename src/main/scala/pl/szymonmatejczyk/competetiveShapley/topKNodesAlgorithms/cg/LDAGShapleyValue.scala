@@ -7,9 +7,9 @@ import scalax.collection.GraphPredef.graphParamsToPartition
 import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.common._
 import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGenerator
-import pl.szymonmatejczyk.competetiveShapley.InfluenceComputation
 import scala.concurrent.duration.Duration
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
+import pl.szymonmatejczyk.competetiveShapley.ldags.InfluenceComputation
 
 
 trait LDAGShapleyValue extends InfluenceComputation with NaiveSVApproximator {

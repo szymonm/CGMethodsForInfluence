@@ -5,12 +5,14 @@ import org.scalatest.matchers.ShouldMatchers
 import scalax.collection.Graph
 import scalax.collection.GraphPredef._
 import scalax.collection.GraphEdge._
-import scalax.collection.edge.WLDiEdge
 import pl.szymonmatejczyk.competetiveShapley.graphs.Network
+import pl.szymonmatejczyk.competetiveShapley.graphs.MonteCarloShapleyValueNetworkComputation
+import pl.szymonmatejczyk.competetiveShapley.graphs.MonteCarloAbsoluteBanzhaffIndexNetworkComputation
 
 class NetworkTest extends FlatSpec with ShouldMatchers {
 
-  val n = new Network(Graph(1,2,3, 1~2), None)
+  val n = new Network(Graph(1,2,3, 1~2), None) with MonteCarloShapleyValueNetworkComputation[Int, UnDiEdge]
+    with MonteCarloAbsoluteBanzhaffIndexNetworkComputation[Int, UnDiEdge] 
   def majorityVoting(s : Set[Int]) : Double = if (s.size > 1) 1 else 0
   
   def vetoGroup(group : Set[Int])(s : Set[Int]) : Double = if (group.diff(s).isEmpty) 1 else 0

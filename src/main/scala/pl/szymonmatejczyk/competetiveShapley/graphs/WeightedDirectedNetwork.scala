@@ -6,8 +6,9 @@ import scalax.collection.edge.Implicits._
 import scalax.collection.edge.WDiEdge
 import scala.collection._
 
-class WeightedDirectedNetwork(val g: Graph[Int, WDiEdge], val weightDenominator: Double = 100000.0)
-        extends Network[Int, WDiEdge](g, Some(weightDenominator))  {
+class WeightedDirectedNetwork(override val graph: Graph[Int, WDiEdge], val weightDenominator: Double = 100000.0)
+        extends Network[Int, WDiEdge](graph, Some(weightDenominator))  {
+  lazy val maxNodeId = graph.nodes.maxBy(_.value).value
 }
 
 object WeightedDirectedNetwork {

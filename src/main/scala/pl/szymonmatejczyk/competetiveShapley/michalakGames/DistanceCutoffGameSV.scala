@@ -8,31 +8,14 @@ import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.common._
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
 import scala.concurrent.duration.Duration
+import pl.szymonmatejczyk.competetiveShapley.graphs.algorithms.FloydWarshall
 
 trait DistanceCutoffGameSV {
   self : WeightedDirectedNetwork =>
-    
-  def floydWarshall() : PIMap[Int, Double] = {
-    val distMap = new PIMap[Int, Double](Double.MaxValue)
-    def dist(i : Int, j : Int) = distMap(((i, j)))
-    
-    g.nodes.foreach {n => distMap += (((n.value, n.value), 0.0))}
-    g.edges.foreach {e => distMap += (((e._1.value, e._2.value), e.weight / weightDenominator))}
-    g.nodes.foreach{
-      k => g.nodes.foreach{
-        i => g.nodes.foreach {
-          j => 
-            if (dist(i.value, j.value) > dist(i.value, k.value) + dist(k.value, j.value))
-              distMap(((i.value, j.value))) = dist(i.value, k.value) + dist(k.value, j.value)
-        }
-      }
-    }
-    distMap
-  }
   
   def computeDistanceCutoffSV(cutoff : Double) : Map[Int, Double] = {
-    val distances = floydWarshall()
-    g.nodes.toOuterNodes.map{x => 
+    val distances = FloydWarshall(self)
+    self.graph.nodes.toOuterNodes.map{x => 
       (x, computeSingleSV(x, cutoff, distances, extInDegreeMap(distances, cutoff)))}.toMap
   }
   
@@ -40,7 +23,7 @@ trait DistanceCutoffGameSV {
   
   def extInDegreeMap(distMap : PIMap[Int, Double], cutoff : Double) : Map[Int, Double] = {
     var res = mutable.Map[Int, Double]()
-    g.nodes.foreach{
+    self.graph.nodes.foreach{
       node => 
         res(node.value) = distMap.bySecondIterator(node.value).filter(_._2 <= cutoff).size - 1
     }
