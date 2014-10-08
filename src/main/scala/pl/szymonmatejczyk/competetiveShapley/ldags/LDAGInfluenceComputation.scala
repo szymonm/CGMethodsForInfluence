@@ -1,20 +1,14 @@
-package pl.szymonmatejczyk.competetiveShapley
+package pl.szymonmatejczyk.competetiveShapley.ldags
 
-import scala.collection._
-import scalax.collection.Graph
-import scalax.collection.GraphPredef._
-import scalax.collection.GraphEdge._
-import scalax.collection.edge.Implicits._
-import scalax.collection.edge.WDiEdge
-import scala.util.Random
-import scalax.collection.config.CoreConfig
-import com.typesafe.scalalogging.slf4j.Logger
-import org.slf4j.LoggerFactory
-import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
 import com.typesafe.scalalogging.slf4j.Logging
-import scalax.collection.GraphTraversal
-import pl.szymonmatejczyk.competetiveShapley.utils.Cache
 import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphVisitor
+import pl.szymonmatejczyk.competetiveShapley.utils.Cache
+import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
+import scala.collection._
+import scala.util.Random
+import scalax.collection.Graph
+import scalax.collection.GraphTraversal
+import scalax.collection.edge.WDiEdge
 
 trait InfluenceComputation extends Cache with Logging {
   val r: Random
