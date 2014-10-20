@@ -1,6 +1,5 @@
 package pl.szymonmatejczyk.competetiveShapley.ldags
 
-import com.typesafe.scalalogging.slf4j.Logging
 import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphVisitor
 import pl.szymonmatejczyk.competetiveShapley.utils.Cache
 import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
@@ -9,8 +8,10 @@ import scala.util.Random
 import scalax.collection.Graph
 import scalax.collection.GraphTraversal
 import scalax.collection.edge.WDiEdge
+import com.typesafe.scalalogging.LazyLogging
+import scalax.collection.GraphTraversal._
 
-trait InfluenceComputation extends Cache with Logging {
+trait InfluenceComputation extends Cache with LazyLogging {
   val r: Random
 
   val g: Graph[Int, WDiEdge]
@@ -80,59 +81,63 @@ trait InfluenceComputation extends Cache with Logging {
           logger.debug("Influences on: " + to)
           logger.debug(currentInfluences.bySecondIterator(to).toList.mkString(";"))
           // 20
-          g.get(addedNode).traverse(direction = GraphTraversal.Predecessors,
-            breadthFirst = true,
-            edgeFilter = { e: g.EdgeT =>
+          (g get addedNode).outerEdgeTraverser
+            .withDirection(Predecessors)
+            .withSubgraph(edges = e =>
               SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
-                true, true)(e.toEdgeIn)
-            })(
-              nodeVisitor = _ => GraphTraversal.VisitorReturn.Continue,
-              edgeVisitor = (e => {
+                true, true)(e.toOuter))
+            .foreach {
+              e =>
                 logger.debug("first phase edge: " + e)
-                deltaInfluence += (e._1.value) -> (deltaInfluence(e._1.value) +
-                  e.weight / weightDenominator * deltaInfluence(e._2.value))
-              }))
+                deltaInfluence += (e._1) -> (deltaInfluence(e._1) +
+                  e.weight / weightDenominator * deltaInfluence(e._2))
+            }
+
           // 21
-          g.get(addedNode).traverse(direction = GraphTraversal.Predecessors, breadthFirst = true,
-            edgeFilter = { e: g.EdgeT =>
+          (g get addedNode).outerNodeTraverser
+            .withDirection(Predecessors)
+            .withSubgraph(edges = e =>
               SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
-                true, true)(
-                  e.toEdgeIn)
-            })(
-              nodeVisitor =
-                u => {
+                true, true)(e.toOuter))
+            .foreach {
+              u =>
+                {
                   currentInfluences((u, to)) += deltaInfluence(u) // 21
                   incrementalInfluence(u) += deltaInfluence(u) * (1 - activationProbability((to, u))) //22 
-                  GraphTraversal.VisitorReturn.Continue
-                })
+                }
+            }
 
           val deltaAp = mutable.HashMap[Int, Double]().withDefaultValue(0.0)
           deltaAp += addedNode -> (1 - activationProbability((to, addedNode))) //24
 
-          g.get(addedNode).traverse(direction = GraphTraversal.Successors, breadthFirst = true,
-            edgeFilter = { e: g.EdgeT =>
+          (g get addedNode).outerEdgeTraverser
+            .withDirection(Successors)
+            .withSubgraph(edges = e =>
               SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
-                false)(e.toEdgeIn)
-            })(
-              edgeVisitor =
-                e => {
+                false)(e.toOuter))
+            .foreach {
+              e =>
+                {
                   logger.debug("2nd phase edge: " + e.toString)
                   deltaAp(e._2) += deltaAp(e._1) * e.weight / weightDenominator
-                })
+                }
+            }
+
           logger.debug("DeltaAp")
           logger.debug(deltaAp.mkString(";"))
-          g.get(addedNode).traverse(direction = GraphTraversal.Successors, breadthFirst = true,
-            edgeFilter = { e: g.EdgeT =>
+          
+          (g get addedNode).outerNodeTraverser
+            .withDirection(Successors)
+            .withSubgraph(edges = e => 
               SubgraphVisitor.edgeFilter(ldagNodes(to) -- currentInitialSet,
-                false)(e.toEdgeIn)
-            })(
-              nodeVisitor =
-                u => {
+                false)(e.toOuter))
+            .foreach {
+              u => {
                   logger.debug("2nd phase node: " + u.toString)
                   activationProbability((to, u)) += deltaAp(u)
                   incrementalInfluence(u) -= currentInfluences((u, to)) * deltaAp(u)
-                  GraphTraversal.VisitorReturn.Continue
-                })
+                }
+          }
         }
     }
     currentInitialSet += addedNode

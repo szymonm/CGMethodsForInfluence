@@ -11,9 +11,11 @@ import scala.util.Random
 import scalax.collection.GraphTraversal
 import scalax.collection.edge.WDiEdge
 import scala.reflect.ClassTag
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
+import scalax.collection.GraphTraversal._
+import scala.util.control.Breaks._
 
-object SubgraphFromExtension extends Logging {
+object SubgraphFromExtension extends LazyLogging {
   val r = new Random
   
   val MAX_RUNS = 25
@@ -23,10 +25,10 @@ object SubgraphFromExtension extends Logging {
    * @param fromNode or a random node not bigger than @param size nodes.
    */
   def randomSubgraph[N: Manifest, E[N] <: EdgeLikeIn[N]](graph: Graph[N, E], size: Int,
-    fromNode: Option[N], runNo : Int = 0): Graph[N, E] = {
+    fromNode: Option[N], randomNodeMinOutDegre: Int = 4, runNo : Int = 0): Graph[N, E] = {
     def getRandomNode(): graph.NodeT = {
       //      graph.filterNot(graph.having(node = _.outDegree > 4)).nodes.draw(r)
-      val arr = graph.nodes.filter(_.outDegree > 4).toIndexedSeq
+      val arr = graph.nodes.filter(_.outDegree > randomNodeMinOutDegre).toIndexedSeq
       val pos = r.nextInt(arr.size)
       arr(pos)
     }
@@ -35,15 +37,16 @@ object SubgraphFromExtension extends Logging {
       case None => getRandomNode
     }
     var nodes = Set[N]()
-    startingNode.traverse(direction = GraphTraversal.AnyConnected,
-        maxDepth = 2 * math.sqrt(size).toInt)(nodeVisitor =
+    breakable {
+    startingNode.outerNodeTraverser(Parameters(direction=AnyConnected,
+        maxDepth=2 * math.sqrt(size).toInt))
+        .foreach(
       u => {
         nodes += (u.value)
-        if (nodes.size < size)
-          GraphTraversal.VisitorReturn.Continue
-        else
-          GraphTraversal.VisitorReturn.Cancel
+        if (!(nodes.size < size))
+          break
       })
+    }
     if (nodes.size < size / 2) {
       logger.warn("Subgraph degenerated...restarting")
       if (runNo == MAX_RUNS) {

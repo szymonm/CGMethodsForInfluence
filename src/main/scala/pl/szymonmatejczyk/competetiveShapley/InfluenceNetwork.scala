@@ -1,6 +1,11 @@
 package pl.szymonmatejczyk.competetiveShapley
 
-import com.typesafe.scalalogging.slf4j.Logging
+import scala.collection.immutable
+import scala.util.Random
+
+import com.typesafe.scalalogging.LazyLogging
+
+import pl.szymonmatejczyk.competetiveShapley.utils.Cache
 import pl.szymonmatejczyk.competetiveShapley.graphs.SizeRestriction
 import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GMLFileReader
@@ -20,8 +25,6 @@ import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.RandomNodes
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGBanzhafIndex
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.LDAGShapleyValue
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.ShapleyValueWithDiscount
-import scala.collection._
-import scala.util.Random
 import scalax.collection.Graph
 import scalax.collection.config.CoreConfig
 import scalax.collection.edge.WDiEdge
@@ -31,7 +34,7 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
         with LiveGraph
         with IncrementalInfluence
         with LinearThreshold
-        with Logging 
+        with LazyLogging 
         with LDAGGreedyTopNodes 
         with LDAGShapleyValue 
         with LDAGApproximation 
@@ -52,30 +55,17 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
   def this(wdn : WeightedDirectedNetwork) = this(wdn.graph, wdn.weightDenominator)
   
   val r = new Random
-  val DEFAULT_THRESHOLD = 0.3
-  private var _threshold = DEFAULT_THRESHOLD
-
-  def threshold = _threshold
-  def threshold_=(threshold: Double) {
-    if (threshold != _threshold) {
-      _threshold = threshold
-      clearCache()
-    }
-  }
-
-  override def clearCache() {
-  }
   
   def size = g.nodes.size
   
   @deprecated("computes only sum of single influences", "ever")
   def computeTotatInfluences(): immutable.Map[Int, Double] = {
     val influences = getInfluences()
-    def add(a: Double, b: ((Int, Int), Double)) = a + b._2
+    def addSecond(a: Double, b: ((Int, Int), Double)) = a + b._2
 
     val total = influences.all.map {
       node =>
-        node -> influences.byFirstIterator(node).foldLeft(0.0)(add)
+        node -> influences.byFirstIterator(node).foldLeft(0.0)(addSecond)
     }
     collection.immutable.HashMap[Int, Double]() ++ total
   }
@@ -93,7 +83,7 @@ class InfluenceNetwork(override val g: Graph[Int, WDiEdge], override val weightD
   }
 }
 
-object InfluenceNetwork extends Logging {
+object InfluenceNetwork extends LazyLogging {
   val WEIGHT_DENOMINATOR = 100000L
 
   def fromGML(filename: String, withWeights: Boolean = false): WeightedDirectedNetwork = {

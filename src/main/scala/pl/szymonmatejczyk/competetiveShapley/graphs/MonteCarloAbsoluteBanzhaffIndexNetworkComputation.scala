@@ -16,7 +16,7 @@ trait MonteCarloAbsoluteBanzhaffIndexNetworkComputation[N, E[X] <: EdgeLikeIn[X]
     iterations: Int = 1000): Double = {
     (0 until iterations).iterator.map {
       case i =>
-        val coalition = graph.nodes.toOuterNodes.toSet.filter(_ => Random.nextBoolean())
+        val coalition = graph.nodes.toOuter.filter(_ => Random.nextBoolean())
         payoff(coalition + node) - payoff(coalition - node)
     }.sum / iterations
   }

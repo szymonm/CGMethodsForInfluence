@@ -4,17 +4,16 @@ import collection._
 import scala.concurrent.Future
 import scala.concurrent.Await
 import scala.concurrent.duration._
-import com.typesafe.scalalogging.slf4j.Logging
 import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.common._
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import scala.annotation.tailrec
+import com.typesafe.scalalogging.LazyLogging
+import pl.szymonmatejczyk.competetiveShapley.utils.Tee
 
-trait CelfPlusPlus extends Logging {
+trait CelfPlusPlus extends LazyLogging {
   self : InfluenceNetwork =>
     
-  val AWAIT_TIME = 1.second
-
   case class NodeRecord(var mg1 : Double, prevBest : Option[g.NodeT], mg2 : Double, 
                         var flag : Int = 0)
 
@@ -36,6 +35,8 @@ trait CelfPlusPlus extends Logging {
   
   def delta(node : g.NodeT, curBest : Option[g.NodeT], seed : Iterable[g.NodeT], MCRuns : Int) 
     : (Double, Double) = {
+    logger debug("delta(" + node.value + ") given seed: " + seed.mkString(",") + 
+        " cur best: " + curBest.map(_.value))
     curBest match {
       case Some(bestNode) =>
         val r = mcIncrementalInfluence(seed.toSet, Seq(Seq(node), Seq(bestNode, node)), MCRuns)

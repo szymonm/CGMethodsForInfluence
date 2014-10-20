@@ -1,7 +1,6 @@
 package pl.szymonmatejczyk.competetiveShapley.experiments
 
 import com.typesafe.config.Config
-import com.typesafe.scalalogging.slf4j.Logging
 import java.net.InetAddress
 import pl.szymonmatejczyk.competetiveShapley.InfluenceHeuristicForSequenceOfK
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader.{TXT, GML}
@@ -10,8 +9,9 @@ import pl.szymonmatejczyk.competetiveShapley.randomGraphs.{ErdosRandomGraphGener
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms._
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.{LDAGShapleyValue, LDAGBanzhafIndex, ShapleyValueWithDiscount}
 import scala.collection.JavaConversions._
+import com.typesafe.scalalogging.LazyLogging
 
-class Settings(config: Config) extends Logging {
+class Settings(config: Config) extends LazyLogging {
 
   val heapSize = java.lang.Runtime.getRuntime.maxMemory()
   val hostname = InetAddress.getLocalHost.getHostName

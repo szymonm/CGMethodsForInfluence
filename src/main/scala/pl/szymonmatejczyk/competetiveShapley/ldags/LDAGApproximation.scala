@@ -9,18 +9,29 @@ import scalax.collection.edge.WDiEdge
 import scala.util.Random
 import scala.collection.mutable.HashMap
 import scalax.collection.GraphTraversal
-import com.typesafe.scalalogging.slf4j.Logging
 import pl.szymonmatejczyk.competetiveShapley.utils.Cache
 import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphVisitor
+import com.typesafe.scalalogging.LazyLogging
+import scalax.collection.GraphTraversal._
 
-trait LDAGApproximation extends Cache with Logging {
+trait LDAGApproximation extends Cache with LazyLogging {
   val g: Graph[Int, WDiEdge]
   val weightDenominator: Double
   val r: Random
-  var threshold: Double
 
   final val MAX_LDAG_SIZE = 15
 
+  val DEFAULT_THRESHOLD = 0.3
+  private var _threshold = DEFAULT_THRESHOLD
+
+  def threshold = _threshold
+  def threshold_=(threshold: Double) {
+    if (threshold != _threshold) {
+      _threshold = threshold
+      clearCache()
+    }
+  }
+  
   // ldag target node -> node -> priority in ldag
   var ldagNodes: mutable.Map[Int, immutable.Map[Int, Int]] =
     mutable.Map[Int, immutable.Map[Int, Int]]()
@@ -90,13 +101,17 @@ trait LDAGApproximation extends Cache with Logging {
     logger.debug("computing ldag pred")
     val ldag = ldagNodes.getOrElse(ldagFor, throw new IllegalStateException("ldags not computed"))
     val predecessors = mutable.Set[Int]()
-    g.get(node).traverse(direction = GraphTraversal.Predecessors, breadthFirst = true,
-      edgeFilter = { e: g.EdgeT => SubgraphVisitor.edgeFilter(ldag, true, true)(e.toEdgeIn) })(
-        nodeVisitor =
-          u => {
-            predecessors += u.value
-            GraphTraversal.VisitorReturn.Continue
-          })
+    (g get node).outerNodeTraverser
+      .withDirection(Predecessors)
+      .withSubgraph(edges = e => SubgraphVisitor.edgeFilter(ldag, true, true)(e.toOuter))
+      .foreach {
+        u =>
+          predecessors += u.value
+      }
+//    g.get(node).traverse(direction = GraphTraversal.Predecessors, breadthFirst = true,
+//      edgeFilter = { e: g.EdgeT => SubgraphVisitor.edgeFilter(ldag, true, true)(e.toEdgeIn) })(
+//        nodeVisitor =
+//          )
 
     logger.debug("computing ldag pred - finished")
     predecessors - node
@@ -109,14 +124,10 @@ trait LDAGApproximation extends Cache with Logging {
     computeLDAG(ldagFor)
     logger.debug("computing ldag succ")
     val ldag = ldagNodes.getOrElse(ldagFor, throw new IllegalStateException("ldags not computed"))
-    val successors = mutable.Set[Int]()
-    g.get(node).traverse(direction = GraphTraversal.Successors, breadthFirst = true,
-      edgeFilter = { e: g.EdgeT => SubgraphVisitor.edgeFilter(ldag, true, true)(e.toEdgeIn) })(
-        nodeVisitor =
-          u => {
-            successors += u.value
-            GraphTraversal.VisitorReturn.Continue
-          })
+    val successors: Set[Int] = (g get node).outerNodeTraverser
+      .withDirection(Successors)
+      .withSubgraph(edges = e => SubgraphVisitor.edgeFilter(ldag, true, true)(e.toOuter))
+      .toSet
 
     logger.debug("computing ldag succ - finished")
     successors - node

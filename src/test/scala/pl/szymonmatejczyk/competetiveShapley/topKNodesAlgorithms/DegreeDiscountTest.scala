@@ -1,20 +1,17 @@
 package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
-import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
-import org.junit.runner.RunWith
-import org.scalatest.junit.JUnitRunner
-import scala.util.Random
-import scalax.collection.Graph
-import scalax.collection.GraphPredef._
-import scalax.collection.GraphEdge._
-import scalax.collection.edge.Implicits._
-import scalax.collection.edge.WDiEdge
 
-import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
+import org.junit.runner.RunWith
+import org.scalatest.Finders
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import pl.szymonmatejczyk.competetiveShapley.graphs.WeightedDirectedNetwork
+import scalax.collection.GraphPredef.EdgeAssoc
+import scalax.collection.edge.Implicits.edge2WDiEdgeAssoc
+import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class DegreeDiscountTest extends FlatSpec with ShouldMatchers {
+class DegreeDiscountTest extends FlatSpec with Matchers {
 
   "DegreeDiscount" should "return center node of a star" in {
     val starOut = WeightedDirectedNetwork.starOut(5, 1, 1)

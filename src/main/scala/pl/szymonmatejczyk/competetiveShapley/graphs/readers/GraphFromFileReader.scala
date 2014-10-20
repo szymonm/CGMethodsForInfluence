@@ -8,11 +8,11 @@ import scalax.collection.GraphEdge._
 import scalax.collection.edge.Implicits._
 import scala.io.Source
 import java.io.IOException
-import com.typesafe.scalalogging.slf4j.Logging
 import scala.collection.mutable.ListBuffer
 import pl.szymonmatejczyk.competetiveShapley.utils.random.RandomDivisionSampler
+import com.typesafe.scalalogging.LazyLogging
 
-trait GraphFromFileReader extends Logging {
+trait GraphFromFileReader extends LazyLogging {
 
   object Int {
     def unapply(s: String): Option[Int] = try {

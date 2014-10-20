@@ -4,8 +4,8 @@ import scala.collection._
 import scalax.collection.GraphTraversal
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphVisitor
-import scalax.collection.GraphTraversal.VisitorReturn.Continue
-import pl.szymonmatejczyk.competetiveShapley.graphs.SubgraphVisitor
+import scalax.collection.GraphTraversal._
+import scalax.collection.edge.WDiEdge
 
 trait InfluenceNetworkLDAGApproximation {
   self: InfluenceNetwork =>
@@ -19,24 +19,24 @@ trait InfluenceNetworkLDAGApproximation {
     res += onNode -> 1.0
     val (ldagNodes, _) = computeLDAG(onNode)
 
-    import scalax.collection.GraphTraversal.VisitorReturn._
-    def propagateInfluenceV(node: g.NodeT) = {
-      Continue
+    def propagateInfluenceE(edge: WDiEdge[Int]) {
+      res += (edge._1 -> (res(edge._1) + edge.weight / weightDenominator *
+        res(edge._2)))
     }
-    def propagateInfluenceE(edge: g.EdgeT) = {
-      res += (edge._1.value -> (res(edge._1.value) + edge.weight / weightDenominator *
-        res(edge._2.value)))
-      Continue
-    }
+    
+    (g get onNode).outerEdgeTraverser
+      .withDirection(Predecessors)
+      .withSubgraph(edges = e => SubgraphVisitor.edgeFilter(ldagNodes, true, true)(e.toOuter))
+      .foreach (propagateInfluenceE)
 
-    g.get(onNode).traverse(direction = GraphTraversal.Predecessors,
-      breadthFirst = true,
-      edgeFilter = { e: g.EdgeT =>
-        SubgraphVisitor.edgeFilter(ldagNodes,
-          true, true)(e.toEdgeIn)
-      })(
-        nodeVisitor = propagateInfluenceV,
-        edgeVisitor = propagateInfluenceE)
+//    g.get(onNode).traverse(direction = GraphTraversal.Predecessors,
+//      breadthFirst = true,
+//      edgeFilter = { e: g.EdgeT =>
+//        SubgraphVisitor.edgeFilter(ldagNodes,
+//          true, true)(e.toEdgeIn)
+//      })(
+//        nodeVisitor = propagateInfluenceV,
+//        edgeVisitor = propagateInfluenceE)
 
     ((collection.immutable.HashMap[Int, Double]() ++ res, ldagNodes))
   }
@@ -54,6 +54,4 @@ trait InfluenceNetworkLDAGApproximation {
     }
     influence
   }
-  
-
 }

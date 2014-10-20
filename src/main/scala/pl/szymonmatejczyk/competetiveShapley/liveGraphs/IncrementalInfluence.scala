@@ -3,12 +3,13 @@ package pl.szymonmatejczyk.competetiveShapley.liveGraphs
 import scala.collection._
 import scala.concurrent._
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
+import pl.szymonmatejczyk.competetiveShapley.utils.Tee
 
 trait IncrementalInfluence extends LiveGraph {
   self : InfluenceNetwork =>
   
   def randomStep(node : g.NodeT, visited : Set[Int]) : Set[Int] = {
-    randomlyReachableFromQueue(immutable.Queue(node), visited)
+    randomlyInfluencedFromQueue(immutable.Queue(node), visited)
   }
   
   def mcStep(node : g.NodeT, visited : immutable.Set[Int], mcIterations : Int) : Double = {
@@ -23,33 +24,39 @@ trait IncrementalInfluence extends LiveGraph {
   
   def randomInfluence(seed : immutable.Set[g.NodeT], 
                       additionalNodeSeqs : Seq[Seq[g.NodeT]]) : Seq[Influence] = {
-    val initiallyVisited = randomlyReachableFromQueue(immutable.Queue() ++ seed, Set[Int]())
-    additionalNodeSeqs.map{
+    val seedIds = seed.map(_.value)
+    val initiallyInfluenced = seedIds ++ randomlyInfluencedFromQueue(immutable.Queue() ++ seed, Set[Int]())
+    additionalNodeSeqs.map {
       case last +: Seq() =>
-        val incrementalInfluence = randomlyReachableFromQueue(immutable.Queue(last), 
-                                                              initiallyVisited).size
-        (initiallyVisited.size + incrementalInfluence, incrementalInfluence)
+        val additionalInfluencersQueue = immutable.Queue(last).filterNot(q => initiallyInfluenced.contains(q.value))
+        val incrementallyVisited = randomlyInfluencedFromQueue(additionalInfluencersQueue, 
+            initiallyInfluenced)
+        val incrementalInfluence = incrementallyVisited.size
+        (initiallyInfluenced.size + incrementalInfluence, incrementalInfluence)
       case init :+ last =>
-        val butLastVisited = randomlyReachableFromQueue(immutable.Queue() ++ init, 
-            initiallyVisited)
-        val lastIncrementalInfluence = randomlyReachableFromQueue(immutable.Queue(last), 
-            initiallyVisited ++ butLastVisited).size
-        val totalInfluence = initiallyVisited.size + butLastVisited.size + lastIncrementalInfluence 
-        (totalInfluence, lastIncrementalInfluence)
+        val butLastInfluenced = randomlyInfluencedFromQueue(
+            (immutable.Queue() ++ init).filterNot(q => initiallyInfluenced.contains(q.value)), 
+            initiallyInfluenced)
+        val alreadyInfluenced = initiallyInfluenced ++ butLastInfluenced
+        val lastIncrementalInfluence = randomlyInfluencedFromQueue(immutable.Queue(last).filterNot(q => alreadyInfluenced.contains(q.value)), 
+                               									  alreadyInfluenced)
+        val totalInfluence = alreadyInfluenced.size + lastIncrementalInfluence.size
+        (totalInfluence, lastIncrementalInfluence.size)
     }
   }
   
-  def mcInfluence(unpack : Influence => Int)(seed : immutable.Set[g.NodeT], 
+  def mcInfluence(extractInt : Influence => Int)(seed : immutable.Set[g.NodeT], 
       additionalNodeSeqs : Seq[Seq[g.NodeT]], mcIterations : Int) : Seq[Double] = {
     def zippedSum(l1 : Seq[Int], l2 : Seq[Int]) = l1.zip(l2).map(x => x._1 + x._2)
-    
-    1.to(mcIterations).par.map{
-      _ => randomInfluence(seed, additionalNodeSeqs).map(unpack)
-    }.foldLeft(Seq.tabulate(additionalNodeSeqs.size)(_ => 0)){case (x,y) => zippedSum(x, y)}.
-    map(_.toDouble / mcIterations)
+
+    1.to(mcIterations).par
+      .map {
+        _ => randomInfluence(seed, additionalNodeSeqs).map(extractInt)
+      }
+      .foldLeft(Seq.tabulate(additionalNodeSeqs.size)(_ => 0)) { case (x, y) => zippedSum(x, y) }
+      .map(_.toDouble / mcIterations)
   }
   
   def mcTotalInfluence = mcInfluence((x : Influence) => x._1) _
   def mcIncrementalInfluence = mcInfluence((x : Influence) => x._2) _
-  
 }

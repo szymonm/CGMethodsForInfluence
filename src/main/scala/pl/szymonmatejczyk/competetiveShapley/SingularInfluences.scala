@@ -2,9 +2,9 @@ package pl.szymonmatejczyk.competetiveShapley
 
 import pl.szymonmatejczyk.competetiveShapley.utils.PIMap
 import pl.szymonmatejczyk.competetiveShapley.utils.Cache
-import com.typesafe.scalalogging.slf4j.Logging
+import com.typesafe.scalalogging.LazyLogging
 
-trait SingularInfluences extends Cache with Logging {
+trait SingularInfluences extends Cache with LazyLogging {
   self : InfluenceNetwork => 
   // Cached data
   var singlularInfluences: Option[PIMap[Int, Double]] = None

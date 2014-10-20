@@ -7,10 +7,10 @@ import scalax.collection.GraphPredef._
 import scalax.collection.GraphEdge._
 import scalax.collection.edge.Implicits._
 import scala.io.Source
-import com.typesafe.scalalogging.slf4j.Logging
 import scala.collection.mutable.ListBuffer
+import com.typesafe.scalalogging.LazyLogging
 
-class TXTFileReader extends GraphFromFileReader with Logging {
+class TXTFileReader extends GraphFromFileReader with LazyLogging {
   val EdgePat = """\s*(\d+)\s+(\d+)""".r
   val CommentPat = """(^#.*)""".r
 

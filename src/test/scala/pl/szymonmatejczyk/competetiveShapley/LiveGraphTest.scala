@@ -16,7 +16,7 @@ import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class LiveGraphTest  extends FlatSpec with ShouldMatchers {
+class LiveGraphTest  extends FlatSpec with Matchers {
   "Live graph" should "enable random spread computation" in {
     val cycle6 = Graph(1 ~> 2 % 1, 2 ~> 3 % 1, 3 ~> 4 % 1, 4 ~> 5 % 1, 5 ~> 6 % 1, 6 ~> 1 % 1)
     val network = new InfluenceNetwork(cycle6, 1)
@@ -24,10 +24,10 @@ class LiveGraphTest  extends FlatSpec with ShouldMatchers {
     
     val network1 = new InfluenceNetwork(cycle6, 2)
     Await.result(network1.mcSpreadingFrom(Set(1), 1000), 1.second) should be (
-        2.0 plusOrMinus 0.1)
+        2.0 +- 0.1)
     
     Await.result(network1.mcSpreadingFrom(Set(1, 4), 1000), 1.second) should be (
-        3.5 plusOrMinus 0.1)
+        3.5 +- 0.1)
   }
   
 //  it should "compute live graphs for different seed sets" in {

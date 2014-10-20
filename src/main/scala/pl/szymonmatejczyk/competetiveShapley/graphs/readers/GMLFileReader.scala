@@ -9,10 +9,10 @@ import scalax.collection.GraphEdge._
 import scalax.collection.edge.Implicits._
 import scala.io.Source
 import java.io.IOException
-import com.typesafe.scalalogging.slf4j.Logging
 import scala.collection.mutable.ListBuffer
+import com.typesafe.scalalogging.LazyLogging
 
-class GMLFileReader extends GraphFromFileReader with Logging {
+class GMLFileReader extends GraphFromFileReader with LazyLogging {
   val EdgePat = """(\s*edge)""".r
   val SourcePat = """\s*source (\d+)""".r
   val TargetPat = """\s*target (\d+)""".r

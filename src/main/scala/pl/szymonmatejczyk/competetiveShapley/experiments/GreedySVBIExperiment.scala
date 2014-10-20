@@ -8,14 +8,14 @@ import scala.collection.mutable.ListBuffer
 import scala.concurrent._
 import scala.concurrent.duration.Duration
 import ExecutionContext.Implicits.global
-import com.typesafe.scalalogging.slf4j.Logging
 import pl.szymonmatejczyk.competetiveShapley.utils._
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils.time
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader
 import scala.util.Success
 import com.typesafe.config.ConfigFactory
+import com.typesafe.scalalogging.LazyLogging
 
-object GreedySVBIExperiment extends App with Logging {
+object GreedySVBIExperiment extends App with LazyLogging {
   val config = ConfigFactory.load()
   val settings = new Settings(config)
   

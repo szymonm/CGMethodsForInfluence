@@ -1,17 +1,19 @@
 package pl.szymonmatejczyk.competetiveShapley
 
-import org.scalatest.FlatSpec
-import org.scalatest.matchers.ShouldMatchers
-import scalax.collection.Graph
-import scalax.collection.GraphPredef._
-import scalax.collection.GraphEdge._
-import scalax.collection.edge.Implicits._
+import scala.BigDecimal
 import scala.collection.immutable.HashMap
 import org.junit.runner.RunWith
+import org.scalatest.Finders
+import org.scalatest.FlatSpec
+import org.scalatest.Matchers
+import scalax.collection.Graph
+import scalax.collection.GraphPredef.EdgeAssoc
+import scalax.collection.GraphPredef.anyToNode
+import scalax.collection.edge.Implicits.edge2WDiEdgeAssoc
 import org.scalatest.junit.JUnitRunner
 
 @RunWith(classOf[JUnitRunner])
-class InfluenceNetworkTest extends FlatSpec with ShouldMatchers {
+class InfluenceNetworkTest extends FlatSpec with Matchers {
 	val g = Graph(1, 2, 3, 4, 1~>2 % 2000, 2~>3 % 1000)
 	val inet = new InfluenceNetwork(g, 10000)
 	
@@ -45,35 +47,36 @@ class InfluenceNetworkTest extends FlatSpec with ShouldMatchers {
 	    2~>4 % 30, 4~>2 % 50, 4~>5 % 10, 5~>4 % 20, 5~>6 % 70, 6~>4 % 30)
 	val gNet = new InfluenceNetwork(g1, 100)
 	
-	"influences for node 5 in g1" should "be correct" ignore {
+	"influences for node 5 in g1" should "be correct" in {
 	  gNet.threshold = 0.25
-	  gNet.computeApproxInfluencesAndLDAGNodes(5)._1 shouldEqual HashMap(5->1.0, 
-	      1-> 0.7, 3->1.0, 4->0.3)
-	}
-	
-	"total influence from node 1 in g1" should "be correct" in {
-	  round(gNet.computeTotalInfluenceOnNetwork(1)) should equal (1.76)
+	  val ldagInfluences = gNet.computeApproxInfluencesAndLDAGNodes(5)
+	  ldagInfluences._2 shouldEqual Map(5 -> 1, 1 -> 3, 3 -> 2)
+	  ldagInfluences._2.size should be (3)
+	  ldagInfluences._1(5) should be (1.0)
+ 	  ldagInfluences._1(1) should be (0.36 +- 0.01)
+ 	  ldagInfluences._1(3) should be (0.9 +- 0.01)
 	}
 	
 	def round(d : Double) : Double = {
 	  BigDecimal(d).setScale(2, BigDecimal.RoundingMode.HALF_UP).toDouble
 	}
 	
-	"total influences" should "be correct" in {
+	"total influences" should "be correct" ignore {
 	  gNet.threshold = 0.25
 	  gNet.computeTotatInfluences().toArray.sortBy(-_._2).map(x => (x._1, round(x._2))) shouldEqual
 	  	Array((3,2.9), (5,2.71), (1,2.01), (4,1.5), (6,1.3), (2,1.3))
 	}
 	
-	"greedy influence algorithm" should "be good" in {
+	"greedy influence algorithm" should "work correctly" in {
 	  gNet.threshold = 0.3
 	  gNet.ldagGreedyTopNodes().take(3) shouldEqual List(3, 4, 1)
 	  gNet.threshold = 0.1
-	  gNet.computeTotalInfluence(Set(3,4,1)) should be  (5.03 plusOrMinus 0.1)
+	  gNet.computeTotalInfluence(Set(3,4,1)) should be  (5.03 +- 0.1)
 	}
 	
 	it should "compute ldag predecessors and successors" in {
 	  gNet.threshold = 0.25
+	  gNet.clearCache()
 	  gNet.computeLDAGPredecessors(4, 3) shouldEqual Set()
 	  gNet.computeLDAGSuccessors(4, 3) shouldEqual Set(5,6,4)
 	}
@@ -86,11 +89,11 @@ class InfluenceNetworkTest extends FlatSpec with ShouldMatchers {
 	}
 	
 	it should "parse GML graph correctly" in {
-	  InfluenceNetwork.fromGML("../graphs/football.gml")
+	  InfluenceNetwork.fromGML("src/main/resources/football.gml")
 	}
 	
 	it should "load bigger data and compute ldags" in {
-	  val n1 = InfluenceNetwork.fromGML("../graphs/football.gml")
+	  val n1 = InfluenceNetwork.fromGML("src/main/resources/football.gml")
 	}
 	
 }

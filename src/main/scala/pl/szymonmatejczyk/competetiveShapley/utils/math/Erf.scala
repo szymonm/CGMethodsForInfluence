@@ -1,6 +1,6 @@
 package pl.szymonmatejczyk.competetiveShapley.utils.math
 
-//Calculates the error function using Horner’s method.
+//Calculates the error function using Horners method.
 object Erf {
   // constants
   val a1: Double =  0.254829592;
