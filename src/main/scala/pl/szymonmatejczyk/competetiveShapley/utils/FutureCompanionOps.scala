@@ -48,7 +48,7 @@ object FutureExtensions {
     /**
      * Returns a future with a unit value that is completed after time `t`.
      */
-    def delay(t: Duration): Future[Unit] = future {
+    def delay(t: Duration): Future[Unit] = Future {
       blocking {
         Thread.sleep(t.toMillis)
       }
@@ -58,7 +58,7 @@ object FutureExtensions {
      * Completes this future with user input.
      */
     def userInput(message: String): Future[String] = Future {
-      readLine(message)
+      scala.io.StdIn.readLine(message)
     }
   }
 }

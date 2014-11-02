@@ -16,7 +16,7 @@ class Ramasuri(influenceNetwork: InfluenceNetwork, outerMC: Int = 10000, innerMC
   with TopKNodesAlgorithm[Int] 
 {
   def marginalContributions(nodes: Seq[influenceNetwork.g.NodeT]): collection.Map[Int, Double] = {
-    val incInfluences = influenceNetwork.mcIncrementalInfluence(Set(), nodes.map(Seq(_)), innerMC)
+    val incInfluences = influenceNetwork.mcIncrementalLTInfluence(nodes.map(n => Set(n.value)), innerMC)
     Map[Int, Double]() ++ (nodes.map(_.value)).zip(incInfluences)
   }
 

@@ -10,6 +10,7 @@ import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms._
 import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.{LDAGShapleyValue, LDAGBanzhafIndex, ShapleyValueWithDiscount}
 import scala.collection.JavaConversions._
 import com.typesafe.scalalogging.LazyLogging
+import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.SPIN
 
 class Settings(config: Config) extends LazyLogging {
 
@@ -21,7 +22,7 @@ class Settings(config: Config) extends LazyLogging {
 
   val resultsDirectory = config.getString("experiments.resultsDirectory") + hostname
 
-//  val WEIGHT_DENOMINATOR = config.getLong("graph.weightDenominator")
+  val WEIGHT_DENOMINATOR = config.getLong("graph.weightDenominator")
 
   val LDAG_THRESHOLD = config.getDouble("graph.ldagThreshold")
 
@@ -29,6 +30,9 @@ class Settings(config: Config) extends LazyLogging {
   val SV_ITER_NO = config.getInt("graph.svIterNo")
 
   val MC_RUNS = config.getInt("graph.mcRuns")
+  
+  val SPIN_INNER_MC = config.getInt("graph.SPINinnerMC")
+  val SPIN_OUTER_MC = config.getInt("graph.SPINouterMC")
 
   implicit val MAX_GRAPH_SIZE = GraphSizeRestriction(config.getInt("experiments.maxGraphSize"))
 
@@ -72,7 +76,8 @@ class Settings(config: Config) extends LazyLogging {
     InfluenceAboveThresholdGameSV.influenceHeuristicForSequenceOfK(1.0),
     CelfPlusPlus.influenceHeuristicForSequenceOfK,
     DegreeDiscount.influenceHeuristicForSequenceOfK,
-    ShapleyValueWithDiscount.influenceHeuristicForSequenceOfK
+    ShapleyValueWithDiscount.influenceHeuristicForSequenceOfK,
+    SPIN.influenceHeuristicForSequenceOfK(SPIN_OUTER_MC, SPIN_OUTER_MC )
   )
 
   val referenceHeuristic = RandomNodes.influenceHeuristicForSequenceOfK

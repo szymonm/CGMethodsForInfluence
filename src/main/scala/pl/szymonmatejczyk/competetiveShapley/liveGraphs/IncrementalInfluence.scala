@@ -3,7 +3,6 @@ package pl.szymonmatejczyk.competetiveShapley.liveGraphs
 import scala.collection._
 import scala.concurrent._
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
-import pl.szymonmatejczyk.competetiveShapley.utils.Tee
 
 trait IncrementalInfluence extends LiveGraph {
   self : InfluenceNetwork =>

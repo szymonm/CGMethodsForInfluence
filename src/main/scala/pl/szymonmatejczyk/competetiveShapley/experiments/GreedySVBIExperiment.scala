@@ -37,8 +37,7 @@ object GreedySVBIExperiment extends App with LazyLogging {
 
   val results = ListBuffer[TestResult]()
 
-  def performExperiment(data: ExperimentCase, seedSizes: Seq[Int]) 
-      : Future[TestResult] = future {
+  def performExperiment(data: ExperimentCase, seedSizes: Seq[Int]) : TestResult = {
     println("Data: " + data.name + " Seed sizes: " + seedSizes.mkString(","))
     val net = data.network
     val res = new TestResult(data.name)
@@ -48,7 +47,7 @@ object GreedySVBIExperiment extends App with LazyLogging {
     data.network.clearCache()
     val refTimes = refResults.map(_._2)
     val refICQualities  = refResults.map(x => net.computeTotalInfluence(x._1))
-    val refLTQualities = refResults.map(x => net.mcLinearThresholdSeedQuality(x._1, settings.MC_RUNS))
+    val refLTQualities = refResults.map(x => net.mcLTInfluence(x._1, settings.MC_RUNS))
     
     val tvs = refTimes.zip(refICQualities).zip(refLTQualities).map(
         x => new TestValue(x._1._2, x._1._1.toMillis, 1.0, x._2))
@@ -71,7 +70,7 @@ object GreedySVBIExperiment extends App with LazyLogging {
       data.network.clearCache()
       val times = results.map(_._2)
       val ICqualities = results.map(x => net.computeTotalInfluence(x._1))
-      val LTqualities = results.map(x => net.mcLinearThresholdSeedQuality(x._1, settings.MC_RUNS))
+      val LTqualities = results.map(x => net.mcLTInfluence(x._1, settings.MC_RUNS))
       val similarities = results.map(_._1).zip(refResults.map(_._1)).map(
           x => setSimilarity(x._1.toSet, x._2.toSet))
 
@@ -92,33 +91,30 @@ object GreedySVBIExperiment extends App with LazyLogging {
     res
   }
 
-  val futures = for (
+  for (
     data <- cases
   ) yield {
-    val future = performExperiment(data, SEED_PERCENT_RANGE.map(_ * data.network.size / 100))
-    future.onFailure {
-          case e: Throwable =>
-            logger.warn(s"Experiment ${data.name} failed.")
-            logger.warn(e.getMessage)
-            logger.warn(e.getStackTraceString)
-    }
-    future.map {
-      case result =>
-        logger.info(s"Printing results ${data.name}")
-        val filename = data.name.replace(".", "_")
-        printResultsToFile(s"${settings.resultsDirectory}/$filename.res",
-          result)
-        printResultsToFile(s"${settings.resultsDirectory}/${filename}_times.res",
-          result, _.time)
-        printResultsToFile(s"${settings.resultsDirectory}/${filename}_greedySimilarities.res",
-          result, _.greedySimilarity)
-        printResultsToFile(s"${settings.resultsDirectory}/${filename}_lt.res",
-          result, _.LTvalue)
-        logger.info(s"Results printed ${data.name}")
+    try {
+      val result = performExperiment(data, SEED_PERCENT_RANGE.map(_ * data.network.size / 100))
+      logger.info(s"Printing results ${data.name}")
+      val filename = data.name.replace(".", "_")
+      printResultsToFile(s"${settings.resultsDirectory}/$filename.res",
+        result)
+      printResultsToFile(s"${settings.resultsDirectory}/${filename}_times.res",
+        result, _.time)
+      printResultsToFile(s"${settings.resultsDirectory}/${filename}_greedySimilarities.res",
+        result, _.greedySimilarity)
+      printResultsToFile(s"${settings.resultsDirectory}/${filename}_lt.res",
+        result, _.LTvalue)
+      logger.info(s"Results printed ${data.name}")
+    } catch {
+      case e: Throwable =>
+        logger.warn(s"Experiment ${data.name} failed.")
+        logger.warn(e.getMessage)
+        logger.warn(e.getStackTrace().mkString("\n"))
     }
   }
   
-  Await.result(Future.sequence(futures), Duration.Inf)
   allResults.close()
 
   def printResultsToFile(filename : String, result : TestResult, 

@@ -7,9 +7,9 @@ import scala.annotation.tailrec
 trait LinearThreshold {
   self : InfluenceNetwork =>
 
-  def uniformActivationThresholdGenerator() : Double = r.nextDouble()
+  private val uniformActivationThresholdGenerator: () => Double = r.nextDouble _
   
-  def incrementalRandomLinearThresholdSeedQuality(incrementalSeeds: Seq[Set[Int]],
+  def incrementalRandomLTInfluence(incrementalSeeds: Seq[Set[Int]],
       activationThresholdGenerator: (() => Double) = uniformActivationThresholdGenerator): Stream[Int] = {
     
     val activationThresholdsLeft = new Array[Double](self.maxNodeId + 1)
@@ -22,7 +22,7 @@ trait LinearThreshold {
       else {
         val thresholdsFilled: ParSet[Int] = lastPhaseActivated.toSeq
           .flatMap(node => 
-            g.get(node).outgoing
+            graph.get(node).outgoing
               .filterNot(e => activated.contains(e._2))
               .map(e => (e._2, e.weight.toDouble / weightDenominator)))
           .groupBy(_._1)
@@ -47,12 +47,22 @@ trait LinearThreshold {
     activateNodesIncremental(ParSet(), incrementalSeeds)
   }
   
-  def randomLinearThresholdSeedQuality(seed : Seq[Int],
+  def randomLTInfluence(seed : Seq[Int],
       activationThresholdGenerator : (() => Double) = uniformActivationThresholdGenerator) : Int = 
-        incrementalRandomLinearThresholdSeedQuality(Seq(seed.toSet), activationThresholdGenerator).head
+        incrementalRandomLTInfluence(Seq(seed.toSet), activationThresholdGenerator).head
 
-  def mcLinearThresholdSeedQuality(seed : Seq[Int], runs : Int, 
+  def mcIncrementalLTInfluence(seeds: Seq[Set[Int]], runs: Int, 
+      atg: (() => Double) = uniformActivationThresholdGenerator): Seq[Double] = {
+    val incrementalInfluences: Array[Stream[Int]] = (1 to runs).par
+      .map(_ => incrementalRandomLTInfluence(seeds, atg)).toArray
+    
+    (0 until seeds.size).map {
+      i => (0 until runs).foldLeft(0.0){case (cur, next) => cur + incrementalInfluences(next)(i)} / runs
+    }
+  }
+  
+  def mcLTInfluence(seed : Seq[Int], runs : Int, 
       atg : (() => Double) = uniformActivationThresholdGenerator) : Double = {
-    1.to(runs).par.map{_ => randomLinearThresholdSeedQuality(seed, atg).toDouble}.sum / runs
+    1.to(runs).par.map{_ => randomLTInfluence(seed, atg).toDouble}.sum / runs
   }
 }

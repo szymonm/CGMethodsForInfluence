@@ -1,6 +1,6 @@
 name := "Competetive shapley"
 
-version := "0.4"
+version := "0.5"
 
 scalaVersion := "2.11.2"
 
@@ -22,6 +22,15 @@ libraryDependencies += "com.typesafe" % "config" % "1.2.1"
 
 parallelExecution in Test := false
 
-javaOptions in run += "-Xmx4G"
+fork in run := true
+
+javaOptions in run ++= Seq(
+  "-Xms256M", 
+  "-Xmx4G", 
+  "-Dcom.sun.management.jmxremote", 
+  "-Dcom.sun.management.jmxremote.port=9010",
+  "-Dcom.sun.management.jmxremote.local.only=false", 
+  "-Dcom.sun.management.jmxremote.authenticate=false", 
+  "-Dcom.sun.management.jmxremote.ssl=false")
 
 EclipseKeys.withSource := true

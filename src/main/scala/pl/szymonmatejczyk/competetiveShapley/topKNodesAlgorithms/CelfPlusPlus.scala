@@ -9,7 +9,6 @@ import pl.szymonmatejczyk.competetiveShapley.common._
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import scala.annotation.tailrec
 import com.typesafe.scalalogging.LazyLogging
-import pl.szymonmatejczyk.competetiveShapley.utils.Tee
 
 trait CelfPlusPlus extends LazyLogging {
   self : InfluenceNetwork =>
