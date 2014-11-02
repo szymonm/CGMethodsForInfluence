@@ -16,11 +16,11 @@ trait LinearThreshold {
     graph.nodes.foreach(n => activationThresholdsLeft(n.value) = activationThresholdGenerator())
     
     @tailrec
-    def activateNodes(initiallyActivated: ParSet[Int], activated: ParSet[Int], lastPhaseActivated: ParSet[Int]): ParSet[Int] = {
+    def activateNodes(initiallyActivated: Set[Int], activated: Set[Int], lastPhaseActivated: Set[Int]): Set[Int] = {
       if (lastPhaseActivated.isEmpty)
         activated.diff(initiallyActivated)
       else {
-        val thresholdsFilled: ParSet[Int] = lastPhaseActivated.toSeq
+        val thresholdsFilled: Set[Int] = lastPhaseActivated.toSeq
           .flatMap(node => 
             graph.get(node).outgoing
               .filterNot(e => activated.contains(e._2))
@@ -29,22 +29,22 @@ trait LinearThreshold {
           .map{ case (node, listOfInfluences) => (node, listOfInfluences.map(_._2).sum)}
           .flatMap{ case (node, sumOfInfluence) =>
             activationThresholdsLeft(node) -= sumOfInfluence
-            if (activationThresholdsLeft(node) <= 0) ParSet[Int](node) else ParSet[Int]()}.toSet
+            if (activationThresholdsLeft(node) <= 0) Set[Int](node) else Set[Int]()}.toSet
         
         activateNodes(initiallyActivated, activated ++ thresholdsFilled, thresholdsFilled)
       } 
     }
   
-    def activateNodesIncremental(activated: ParSet[Int], nextParts: Seq[Set[Int]]): Stream[Int] = {
+    def activateNodesIncremental(activated: Set[Int], nextParts: Seq[Set[Int]]): Stream[Int] = {
       nextParts match {
         case Seq() => Stream.empty[Int]
         case head +: tail =>
-          val incrementallyActivated = activateNodes(activated.par, activated ++ head, head.par)
+          val incrementallyActivated = activateNodes(activated, activated ++ head, head)
           incrementallyActivated.size #:: activateNodesIncremental(activated ++ incrementallyActivated, tail)
       }
     }
     
-    activateNodesIncremental(ParSet(), incrementalSeeds)
+    activateNodesIncremental(Set(), incrementalSeeds)
   }
   
   def randomLTInfluence(seed : Seq[Int],

@@ -83,9 +83,7 @@ class InfluenceNetworkTest extends FlatSpec with Matchers {
 	
 	it should "compute BI using ldags" in {
 	  val ranking = gNet.computeBIRanking(0.1, 100)
-	  println(ranking)
 	  val value = gNet.computeTotalInfluence(ranking.iterator.map(_._1).take(3).toIterable)
-	  println(value)
 	}
 	
 	it should "parse GML graph correctly" in {

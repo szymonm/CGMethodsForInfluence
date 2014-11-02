@@ -29,10 +29,5 @@ class LiveGraphTest  extends FlatSpec with Matchers {
     Await.result(network1.mcSpreadingFrom(Set(1, 4), 1000), 1.second) should be (
         3.5 +- 0.1)
   }
-  
-//  it should "compute live graphs for different seed sets" in {
-//    val cycle6 = Graph(1 ~> 2 % 1, 2 ~> 3 % 1, 3 ~> 4 % 1, 4 ~> 5 % 1, 5 ~> 6 % 1, 6 ~> 1 % 1)
-//    val n = new InfluenceNetwork(cycle6, 10)
-//    1.to(4).map(_ => println(n.randomLiveGraphFrom(List(Set(1,2), Set(2,3), Set(3,4))).mkString(";")))
-//  }
+
 }

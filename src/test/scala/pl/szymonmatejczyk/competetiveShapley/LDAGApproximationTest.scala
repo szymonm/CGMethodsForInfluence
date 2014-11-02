@@ -14,13 +14,11 @@ class LDAGApproximationTest extends FlatSpec with ShouldMatchers {
 	
   "LDAG approximation" should "compute ldag" in {
     gNet.threshold = 0.1
-    println(gNet.computeLDAG(4))
   }
   
   it should "allow predecessor traverse" in {
     gNet.ldagPredecessorsTraverse(4, 3){
       case (node, weight) => if (Set(5, 1, 7).contains(node.value)) {
-        println(node, weight)
         false
       } else {
         true

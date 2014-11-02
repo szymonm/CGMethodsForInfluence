@@ -20,7 +20,6 @@ class CelfPlusPlusTest extends FlatSpec with Matchers {
         2~>4 % 30, 4~>2 % 50, 4~>5 % 10, 5~>4 % 20, 5~>6 % 70, 6~>4 % 30)
     val gNet = new InfluenceNetwork(g1, 100)
     val greedyLdagResult = gNet.ldagGreedyTopNodes(Some(0.1)).take(3).toSet
-    println("\n\n\n")
     gNet.computeTopCpp(1000).take(3).toSet shouldEqual greedyLdagResult
   }
 }

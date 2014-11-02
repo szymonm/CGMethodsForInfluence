@@ -27,6 +27,5 @@ class GMLFileReaderTest extends FlatSpec with ShouldMatchers {
   
   it should "be alge to normalize weights" in {
     val g = Graph(1, 2, 3, 2 ~> 1 %2, 3 ~> 1 % 4)
-    println(reader.normalizeWeights(g, 100))
   }
 }
