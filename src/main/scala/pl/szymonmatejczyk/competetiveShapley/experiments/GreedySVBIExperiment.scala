@@ -3,6 +3,7 @@ package pl.szymonmatejczyk.competetiveShapley.experiments
 import java.io.PrintWriter
 import java.io.File
 import java.nio.file.Files
+import java.util.Locale
 import scala.collection._
 import scala.collection.mutable.ListBuffer
 import scala.concurrent._
@@ -15,8 +16,14 @@ import scala.util.Success
 import com.typesafe.config.ConfigFactory
 import com.typesafe.scalalogging.LazyLogging
 
+
+case class TestValue(ICvalue : Double, time : Double, greedySimilarity : Double, LTvalue : Double)
+  
 object GreedySVBIExperiment extends App with LazyLogging {
+  Locale.setDefault(new Locale("en", "US"));
+  
   val config = ConfigFactory.load()
+  println(config)
   val settings = new Settings(config)
   
   def SEED_PERCENT_RANGE = Range(2, 32,  4)
@@ -28,8 +35,6 @@ object GreedySVBIExperiment extends App with LazyLogging {
   val cases = settings.testedCases
 
   val algorithms = settings.algorithms
-  
-  case class TestValue(ICvalue : Double, time : Double, greedySimilarity : Double, LTvalue : Double)
   
   case class TestResult(caseName: String, values : mutable.Map[(String, Int), TestValue]) {
     def this(name : String) = this(name, mutable.Map[(String, Int), TestValue]())
@@ -60,13 +65,14 @@ object GreedySVBIExperiment extends App with LazyLogging {
     allResults.flush()
      
     data.network.clearCache()
-    refICQualities.zip(refTimes).foreach{
-      x => logger.info(s"${settings.referenceHeuristic._1}(${data.name}): ${x._1} time: ${x._2}")
+    refICQualities.zip(refLTQualities).zip(refTimes).foreach{
+      x => logger.info(f"${settings.referenceHeuristic._1}%s(${data.name}%s): IC: ${x._1._1}%.3f, LT: ${x._1._2}%.3f, time: ${x._2}")
     }
     
     for (heuristic <- algorithms) {
       logger.info(s"Testing ${heuristic._1}(${data.name})")
       val results = heuristic._2(data.network)(seedSizes)
+      logger.info(s"Evaluation started")
       data.network.clearCache()
       val times = results.map(_._2)
       val ICqualities = results.map(x => net.computeTotalInfluence(x._1))
@@ -84,8 +90,8 @@ object GreedySVBIExperiment extends App with LazyLogging {
       allResults.flush()
       res.values ++= seedSizes.map((heuristic._1, _)).zip(tvs)
       data.network.clearCache()
-      ICqualities.zip(times).foreach {
-        x => logger.info(s"${heuristic._1}(${data.name}): ${x._1} time: ${x._2}")
+      ICqualities.zip(LTqualities).zip(times).foreach {
+        x => logger.info(f"${heuristic._1}%s(${data.name}%s): IC: ${x._1._1}%.3f, LT: ${x._1._2}%.3f, time: ${x._2}")
       }
     }
     res
@@ -110,7 +116,7 @@ object GreedySVBIExperiment extends App with LazyLogging {
     } catch {
       case e: Throwable =>
         logger.warn(s"Experiment ${data.name} failed.")
-        logger.warn(e.getMessage)
+        logger.warn(e.getMessage())
         logger.warn(e.getStackTrace().mkString("\n"))
     }
   }

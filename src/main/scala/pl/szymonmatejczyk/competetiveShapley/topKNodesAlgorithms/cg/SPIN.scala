@@ -33,7 +33,7 @@ extends Ramasuri(influenceNetwork, outerMC, innerMC) {
     next(ranking.toList, Vector(), Set())
   }
   
-  override def topknodes() = topknodes(super.ranking().toSeq.sortBy(-_._2).map(_._1))
+  override def topknodes() = topknodes(ranking().toSeq.sortBy(-_._2).map(_._1))
 }
 
 object SPIN {

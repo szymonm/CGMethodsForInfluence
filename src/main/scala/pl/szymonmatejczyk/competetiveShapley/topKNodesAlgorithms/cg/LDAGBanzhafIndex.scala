@@ -20,7 +20,7 @@ trait LDAGBanzhafIndex {
       (
         ldagHead =>
           if (ldagHead != node) {
-            computeBIInLDAG(ldagHead, node, iterNo)
+            bi += computeBIInLDAG(ldagHead, node, iterNo)
           })
     }
     bi / g.nodes.size

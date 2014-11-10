@@ -20,7 +20,7 @@ class Settings(config: Config) extends LazyLogging {
   if (heapSize < 198974848)
     logger.warn(s"Max heap size($heapSize) may be to small.")
 
-  val resultsDirectory = config.getString("experiments.resultsDirectory") + hostname
+  val resultsDirectory = config.getString("experiments.resultsDirectory") + "-" + hostname
 
   val WEIGHT_DENOMINATOR = config.getLong("graph.weightDenominator")
 
@@ -77,7 +77,7 @@ class Settings(config: Config) extends LazyLogging {
     CelfPlusPlus.influenceHeuristicForSequenceOfK,
     DegreeDiscount.influenceHeuristicForSequenceOfK,
     ShapleyValueWithDiscount.influenceHeuristicForSequenceOfK,
-    SPIN.influenceHeuristicForSequenceOfK(SPIN_OUTER_MC, SPIN_OUTER_MC )
+    SPIN.influenceHeuristicForSequenceOfK(SPIN_OUTER_MC, SPIN_INNER_MC)
   )
 
   val referenceHeuristic = RandomNodes.influenceHeuristicForSequenceOfK
