@@ -23,7 +23,6 @@ object GreedySVBIExperiment extends App with LazyLogging {
   Locale.setDefault(new Locale("en", "US"));
   
   val config = ConfigFactory.load()
-  println(config)
   val settings = new Settings(config)
   
   def SEED_PERCENT_RANGE = Range(2, 32,  4)

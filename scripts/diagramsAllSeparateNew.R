@@ -1,6 +1,7 @@
 #!/usr/bin/Rscript
 # Args: filename, name
-RESULTS_PATH_MALE = "../experimentalResults/uzyte/resMale/"
+#RESULTS_PATH_MALE = "../experimentalResults/uzyte/resMale/"
+RESULTS_PATH_MALE = "../results-saturn.phd.ipipan.waw.pl/"
 RESULTS_PATH_DUZE = "../experimentalResults/uzyte/resSaturn8/"
 myPaste <- function(a,b) {
   paste(a,b,sep="")
@@ -29,10 +30,10 @@ cc <-function(a, ...) {
 source("plotDiagram.R")
 
 algLabelsMale = c("Greedy LDAG", expression(bold("LDAG-BF")), expression(bold("LDAG-SV")),
-                  "CELF++","Fringe Game",   
+                  "CELF++", "SPIN", "Fringe Game",   
                   expression(bold("SVD")), 
                   "DDH", "RANDOM")
-rowOrderMale = c(1,2,3,4,7,5,9,10,8)
+rowOrderMale = c(1,3,4,5,8,11,6,10,9,2)
 print(paste("Generating plot...", polbooks[[1]]))
 pdf(cc(polbooks, ".pdf"), width=8, height=8)
 data <- read.table(polbooks[[1]])
@@ -42,7 +43,7 @@ x = dev.off()
 print(paste("Generating plot...", dolphins[[1]]))
 pdf(cc(dolphins, ".pdf"), width=8, height=8)
 data <- read.table(dolphins[[1]])
-plotDiagram(dolphins[[2]], data, algLabelsMale, rowOrderMale)
+plotDiagram(dolphins[[2]], data[,-2], algLabelsMale, rowOrderMale)
 x = dev.off()
 
 print(paste("Generating plot...", polbooks.lt[[1]]))
@@ -68,7 +69,7 @@ x = dev.off()
 print(paste("Generating plot...", dolphinesT[[1]]))
 pdf(cc(dolphinesT[[1]], ".pdf"), width=8, height=8)
 data <- read.table(dolphinesT[[1]])
-plotDiagram(dolphinesT[[2]], data, algLabelsMale, rowOrderMale,T, 20)
+plotDiagram(dolphinesT[[2]], data, algLabelsMale, rowOrderMale,T)
 x = dev.off()
 
 print(paste("Generating plot...", amazonT[[1]]))

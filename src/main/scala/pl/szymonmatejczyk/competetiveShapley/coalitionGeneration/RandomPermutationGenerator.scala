@@ -11,7 +11,6 @@ class RandomPermutationGenerator[T](val s: Set[T], iterNo: Int) extends Permutat
 
   def generate(): Option[Seq[T]] = {
     if (s.isEmpty) return None
-    logger.info(s"Coalition no: ${counter.get()}")
     if (counter.getAndIncrement() < iterNo) {
       Some(r.shuffle(seq))
     } else {
