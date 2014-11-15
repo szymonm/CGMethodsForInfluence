@@ -73,11 +73,11 @@ class Settings(config: Config) extends LazyLogging {
     FringeGameSV.influenceHeuristicForSequenceOfK,
 //    KFringeGameSV.influenceHeuristic(3),
 //    DistanceCutoffGameSV.influenceHeuristic(1.0),
-    InfluenceAboveThresholdGameSV.influenceHeuristicForSequenceOfK(1.0),
-    CelfPlusPlus.influenceHeuristicForSequenceOfK,
+//    InfluenceAboveThresholdGameSV.influenceHeuristicForSequenceOfK(1.0),
+//    CelfPlusPlus.influenceHeuristicForSequenceOfK,
     DegreeDiscount.influenceHeuristicForSequenceOfK,
-    ShapleyValueWithDiscount.influenceHeuristicForSequenceOfK,
-    SPIN.influenceHeuristicForSequenceOfK(SPIN_OUTER_MC, SPIN_INNER_MC)
+    ShapleyValueWithDiscount.influenceHeuristicForSequenceOfK
+//    SPIN.influenceHeuristicForSequenceOfK(SPIN_OUTER_MC, SPIN_INNER_MC)
   )
 
   val referenceHeuristic = RandomNodes.influenceHeuristicForSequenceOfK
