@@ -11,6 +11,7 @@ import scalax.collection.GraphPredef.EdgeAssoc
 import scalax.collection.GraphPredef.anyToNode
 import scalax.collection.edge.Implicits.edge2WDiEdgeAssoc
 import org.scalatest.junit.JUnitRunner
+import scala.concurrent.ExecutionContext.Implicits.global 
 
 @RunWith(classOf[JUnitRunner])
 class InfluenceNetworkTest extends FlatSpec with Matchers {

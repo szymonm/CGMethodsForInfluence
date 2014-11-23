@@ -40,6 +40,10 @@ object GreedySVBIExperiment extends App with LazyLogging {
   }
 
   val results = ListBuffer[TestResult]()
+  
+  def prettyPrint(d: Duration): String = {
+    s"${d.toCoarsest}(${d.toMicros})"
+  }
 
   def performExperiment(data: ExperimentCase, seedSizes: Seq[Int]) : TestResult = {
     println("Data: " + data.name + " Seed sizes: " + seedSizes.mkString(","))
@@ -65,7 +69,8 @@ object GreedySVBIExperiment extends App with LazyLogging {
      
     data.network.clearCache()
     refICQualities.zip(refLTQualities).zip(refTimes).foreach{
-      x => logger.info(f"${settings.referenceHeuristic._1}%s(${data.name}%s): IC: ${x._1._1}%.3f, LT: ${x._1._2}%.3f, time: ${x._2}")
+      x => logger.info(f"${settings.referenceHeuristic._1}%s(${data.name}%s): IC: ${x._1._1}%.3f," + 
+          f" LT: ${x._1._2}%.3f, time: ${prettyPrint(x._2)}")
     }
     
     for (heuristic <- algorithms) {
@@ -90,7 +95,8 @@ object GreedySVBIExperiment extends App with LazyLogging {
       res.values ++= seedSizes.map((heuristic._1, _)).zip(tvs)
       data.network.clearCache()
       ICqualities.zip(LTqualities).zip(times).foreach {
-        x => logger.info(f"${heuristic._1}%s(${data.name}%s): IC: ${x._1._1}%.3f, LT: ${x._1._2}%.3f, time: ${x._2}")
+        x => logger.info(f"${heuristic._1}%s(${data.name}%s): IC: ${x._1._1}%.3f, " + 
+            f"LT: ${x._1._2}%.3f, time: ${prettyPrint(x._2)}")
       }
     }
     res

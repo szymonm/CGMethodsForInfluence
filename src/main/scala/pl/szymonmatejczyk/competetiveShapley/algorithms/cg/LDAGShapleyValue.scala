@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
+package pl.szymonmatejczyk.competetiveShapley.algorithms.cg
 
 import scala.collection._
 import scalax.collection.Graph
@@ -10,6 +10,9 @@ import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGene
 import scala.concurrent.duration.Duration
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
 import pl.szymonmatejczyk.competetiveShapley.ldags.InfluenceComputation
+import scala.concurrent.ExecutionContext
+import java.util.concurrent.Executor
+import java.util.concurrent.Executors
 
 
 trait LDAGShapleyValue extends InfluenceComputation with NaiveSVApproximator {
@@ -18,7 +21,7 @@ trait LDAGShapleyValue extends InfluenceComputation with NaiveSVApproximator {
   val DEFAULT_THRESHOLD: Double
   def threshold_=(threshold: Double)
 
-  def computeSV(iterNo: Int): Map[Int, Double] = {
+  def computeSV(iterNo: Int)(implicit executionContext: ExecutionContext): Map[Int, Double] = {
     val permutationGenerator = PermutationGenerator(g.nodes.toOuterNodes.toSet, iterNo)
     def calculator(seq: Seq[Int]): Map[Int, Double] = {
       val res = mutable.Map[Int, Double]()
@@ -34,10 +37,13 @@ trait LDAGShapleyValue extends InfluenceComputation with NaiveSVApproximator {
       }
       res
     }
-    approximate(permutationGenerator.generate _, calculator _)
+    // ldag model not ready for parallelization
+    approximate(permutationGenerator.generate _, calculator _)(
+        ExecutionContext.fromExecutor(Executors.newSingleThreadExecutor()))
   }
 
-  def computeSVRanking(iterNo: Int, threshold_ : Double = DEFAULT_THRESHOLD): Seq[(Int, Double)] = {
+  def computeSVRanking(iterNo: Int, threshold_ : Double = DEFAULT_THRESHOLD)
+      (implicit executionContext: ExecutionContext): Seq[(Int, Double)] = {
     threshold_=(threshold_)
     computeSV(iterNo).toSeq.sortBy(-_._2)
   }
@@ -46,12 +52,15 @@ trait LDAGShapleyValue extends InfluenceComputation with NaiveSVApproximator {
 object LDAGShapleyValue {
   val NAME = "ldagShapley"
     
-  def influenceHeuristic(ITER_NO : Int): InfluenceHeuristic = new InfluenceHeuristic(NAME, 
+  def influenceHeuristic(ITER_NO : Int)(implicit executionContext: ExecutionContext): 
+    InfluenceHeuristic = new InfluenceHeuristic(NAME, 
       (in: IN) => (k: Int) => topKFromMap[Int](k, in.computeSV(ITER_NO)))
 
-  def influenceHeuristicForSequenceOfK(iterations : Int, threshold : Double) 
+  def influenceHeuristicForSequenceOfK(iterations : Int, threshold : Double)
+    (implicit executionContext: ExecutionContext)
       : InfluenceHeuristicForSequenceOfK = {
-    def influence(in: InfluenceNetwork)(ks: Seq[Int]): Seq[(Seq[Int], Duration)] = {
+    def influence(in: InfluenceNetwork)(ks: Seq[Int]): 
+        Seq[(Seq[Int], Duration)] = {
       val (rank, rtime) = TestingUtils.time(in.computeSVRanking(iterations, threshold))
       topKsFromRank(ks, rank.map(_._1)).map(x => (x, rtime))
     }

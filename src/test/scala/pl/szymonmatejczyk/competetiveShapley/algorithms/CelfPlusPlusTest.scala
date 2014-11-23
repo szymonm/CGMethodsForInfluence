@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
+package pl.szymonmatejczyk.competetiveShapley.algorithms
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
 import org.junit.runner.RunWith

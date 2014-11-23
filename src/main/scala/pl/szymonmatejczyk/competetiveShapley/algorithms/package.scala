@@ -3,7 +3,7 @@ package pl.szymonmatejczyk.competetiveShapley
 import scala.concurrent.duration.Duration
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils._
 
-package object topKNodesAlgorithms {
+package object algorithms {
   def streamToInfluenceHeuristic(name: String, prepareStream: (IN => Stream[Int])): 
       InfluenceHeuristicForSequenceOfK = {
     new InfluenceHeuristicForSequenceOfK(name, (in: InfluenceNetwork) => (ks: Seq[Int]) => {

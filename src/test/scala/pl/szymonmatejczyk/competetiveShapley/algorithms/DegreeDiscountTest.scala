@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
+package pl.szymonmatejczyk.competetiveShapley.algorithms
 
 import org.junit.runner.RunWith
 import org.scalatest.Finders

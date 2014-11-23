@@ -3,7 +3,7 @@ package pl.szymonmatejczyk.competetiveShapley
 import pl.szymonmatejczyk.competetiveShapley.utils.GeneratorOverIterator
 import org.scalatest.FlatSpec
 import org.scalatest.matchers.ShouldMatchers
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.BanzhaffIndexApproximator
+import pl.szymonmatejczyk.competetiveShapley.algorithms.cg.BanzhaffIndexApproximator
 
 class BanzhaffIndexApproximatorTest extends FlatSpec with ShouldMatchers {
   class SimpleGenerator {
@@ -21,6 +21,6 @@ class BanzhaffIndexApproximatorTest extends FlatSpec with ShouldMatchers {
   val GOI = new GeneratorOverIterator((new SimpleGenerator).generate _)
   val BIA = new BanzhaffIndexApproximator
   "Banzhaf index approximator" should "compute mean" in {
-    BIA.mean(GOI) should equal (3.0)
+    BIA.mean(GOI.toSeq) should equal (3.0)
   }
 }

@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
+package pl.szymonmatejczyk.competetiveShapley.algorithms.cg
 
 import scala.collection._
 import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.CoalitionGenerator
@@ -10,11 +10,12 @@ import pl.szymonmatejczyk.competetiveShapley._
 import pl.szymonmatejczyk.competetiveShapley.common._
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
 import scala.concurrent.duration.Duration
+import scala.concurrent.ExecutionContext
 
 trait LDAGBanzhafIndex {
-  self : InfluenceNetwork =>  
-    
-  def computeLDAGBI(node: Int, iterNo: Int): Double = {
+  self: InfluenceNetwork =>
+
+  def computeLDAGBI(node: Int, iterNo: Int)(implicit executionContext: ExecutionContext): Double = {
     var bi = 0.0
     (g.nodes).toOuterNodes.foreach {
       (
@@ -27,13 +28,13 @@ trait LDAGBanzhafIndex {
   }
 
   def computeBIRanking(threshold_ : Double = DEFAULT_THRESHOLD,
-    iterNo: Int = 10): Seq[(Int, Double)] = {
+    iterNo: Int = 10)(implicit executionContext: ExecutionContext): Seq[(Int, Double)] = {
     //computeApproximatedBanzhafIndexAssumingAdditivity(threshold_).iterator.toSeq.sortBy(-_._2)
     threshold = threshold_
     g.nodes.toOuterNodes.map { n => (n -> computeLDAGBI(n, iterNo)) }.toSeq.sortBy(-_._2)
   }
 
-  def computeBIInLDAG(ldagHead: Int, node: Int, iterNo: Int = 10): Double = {
+  def computeBIInLDAG(ldagHead: Int, node: Int, iterNo: Int = 10)(implicit executionContext: ExecutionContext): Double = {
     val BIA = new BanzhaffIndexApproximator()
 
     val coalitionGeneratorSucc = CoalitionGenerator(computeLDAGSuccessors(ldagHead, node), iterNo)
@@ -51,15 +52,15 @@ trait LDAGBanzhafIndex {
 
 object LDAGBanzhafIndex {
   val NAME = "ldagBanzhaf"
-    
-  def influenceHeuristic(iterNo : Int, threshold : Double): InfluenceHeuristic = new InfluenceHeuristic(NAME, 
-      (in: IN) => (k: Int) => in.computeBIRanking(threshold, iterNo).map(_._1).take(k))
 
-  def influenceHeuristicForSequenceOfK(iterations : Int, threshold : Double): InfluenceHeuristicForSequenceOfK = {
-    def influence(in: InfluenceNetwork)(ks: Seq[Int]): Seq[(Seq[Int], Duration)] = {
-      val (rank, rtime) = TestingUtils.time(in.computeBIRanking(threshold, iterations).map(_._1))
-      topKsFromRank(ks, rank).map(x => (x, rtime))
-    }
+  def influenceHeuristic(iterNo: Int, threshold: Double)(implicit executionContext: ExecutionContext): InfluenceHeuristic = new InfluenceHeuristic(NAME,
+    (in: IN) => (k: Int) => in.computeBIRanking(threshold, iterNo).map(_._1).take(k))
+
+  def influenceHeuristicForSequenceOfK(iterations: Int, threshold: Double)(implicit executionContext: ExecutionContext): InfluenceHeuristicForSequenceOfK = {
+      def influence(in: InfluenceNetwork)(ks: Seq[Int]): Seq[(Seq[Int], Duration)] = {
+        val (rank, rtime) = TestingUtils.time(in.computeBIRanking(threshold, iterations).map(_._1))
+        topKsFromRank(ks, rank).map(x => (x, rtime))
+      }
     (NAME, (influence _))
-  } 
+  }
 }

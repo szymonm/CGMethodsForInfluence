@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
+package pl.szymonmatejczyk.competetiveShapley.algorithms
 
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import scala.annotation.tailrec

@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
+package pl.szymonmatejczyk.competetiveShapley.algorithms.cg
 
 import collection._
 import pl.szymonmatejczyk.competetiveShapley._
@@ -6,7 +6,7 @@ import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import scala.concurrent.duration.Duration
 import pl.szymonmatejczyk.competetiveShapley.utils.TestingUtils
 import scala.annotation.tailrec
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms._
+import pl.szymonmatejczyk.competetiveShapley.algorithms._
 
 trait ShapleyValueWithDiscount {
   self : InfluenceNetwork =>

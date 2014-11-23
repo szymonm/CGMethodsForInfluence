@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
+package pl.szymonmatejczyk.competetiveShapley.algorithms.cg
 
 import org.scalatest.WordSpec
 import org.scalatest.Matchers
@@ -6,6 +6,7 @@ import pl.szymonmatejczyk.competetiveShapley.TestGraphs
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
+import scala.concurrent.ExecutionContext
 
 @RunWith(classOf[JUnitRunner])
 class SPINTest extends WordSpec with Matchers {
@@ -21,7 +22,7 @@ class SPINTest extends WordSpec with Matchers {
     "pick correct nodes" in {
       val g = TestGraphs.g2
       val in = new InfluenceNetwork(g)
-      val spin = new SPIN(in)
+      val spin = new SPIN(in)(ExecutionContext.global)
       spin.topknodes(Seq(1, 5, 6, 3, 2, 4)) should be (Stream(1, 5, 2, 6, 3, 4))
     }
   }

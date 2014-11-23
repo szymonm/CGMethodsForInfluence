@@ -6,13 +6,17 @@ import pl.szymonmatejczyk.competetiveShapley.InfluenceHeuristicForSequenceOfK
 import pl.szymonmatejczyk.competetiveShapley.graphs.readers.GraphFromFileReader.{TXT, GML}
 import pl.szymonmatejczyk.competetiveShapley.michalakGames.{InfluenceAboveThresholdGameSV, FringeGameSV}
 import pl.szymonmatejczyk.competetiveShapley.randomGraphs.{ErdosRandomGraphGenerator, GeographicalThresholdGraphGenerator}
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms._
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.{LDAGShapleyValue, LDAGBanzhafIndex, ShapleyValueWithDiscount}
+import pl.szymonmatejczyk.competetiveShapley.algorithms._
+import pl.szymonmatejczyk.competetiveShapley.algorithms.cg.{LDAGShapleyValue, LDAGBanzhafIndex, ShapleyValueWithDiscount}
 import scala.collection.JavaConversions._
 import com.typesafe.scalalogging.LazyLogging
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg.SPIN
+import pl.szymonmatejczyk.competetiveShapley.algorithms.cg.SPIN
+import scala.concurrent.ExecutionContext
+import java.util.concurrent.Executors
 
 class Settings(config: Config) extends LazyLogging {
+  implicit val ec = ExecutionContext.fromExecutor(
+      Executors.newFixedThreadPool(config.getInt("threadPoolSize")))
 
   val heapSize = java.lang.Runtime.getRuntime.maxMemory()
   val hostname = InetAddress.getLocalHost.getHostName
@@ -50,7 +54,7 @@ class Settings(config: Config) extends LazyLogging {
   private val bigWeightedGML: Seq[DataCase] = config.getStringList("experiments.bigCases.weighted.gml")
     .map(x => DataCase(getFileName(x), x, GML, withWeights = true))
 
-  val bigCases = bigUnweightedTXT ++ bigWeightedGML
+  val bigCases = bigWeightedGML ++ bigUnweightedTXT  
 
   val includeBigCases = config.getBoolean("experiments.includeBigCases")
   val includeSmallCases = config.getBoolean("experiments.includeSmallCases")

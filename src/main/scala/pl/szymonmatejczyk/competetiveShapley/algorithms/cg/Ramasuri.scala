@@ -1,16 +1,18 @@
-package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.cg
+package pl.szymonmatejczyk.competetiveShapley.algorithms.cg
 
 import pl.szymonmatejczyk.competetiveShapley.InfluenceNetwork
 import pl.szymonmatejczyk.competetiveShapley.coalitionGeneration.PermutationGenerator
 import pl.szymonmatejczyk.competetiveShapley.RankingComputation
-import pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms.TopKNodesAlgorithm
+import pl.szymonmatejczyk.competetiveShapley.algorithms.TopKNodesAlgorithm
 import pl.szymonmatejczyk.competetiveShapley.common._
+import scala.concurrent.ExecutionContext
 
 /**
  * Calculation of the Shapley value using MC method for the LT model, where
  * spread function is calculated using MC.
  */
 class Ramasuri(influenceNetwork: InfluenceNetwork, outerMC: Int = 10000, innerMC: Int = 4000)
+    (implicit executionContext: ExecutionContext)
   extends NaiveSVApproximator
   with RankingComputation[Int] 
   with TopKNodesAlgorithm[Int] 

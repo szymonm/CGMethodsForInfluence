@@ -1,4 +1,4 @@
-package pl.szymonmatejczyk.competetiveShapley.topKNodesAlgorithms
+package pl.szymonmatejczyk.competetiveShapley.algorithms
 
 import collection._
 import scala.concurrent.Future

@@ -2,8 +2,9 @@ package pl.szymonmatejczyk.competetiveShapley.coalitionGeneration
 
 import scala.collection._
 
-trait CoalitionGenerator {
+trait CoalitionGenerator extends (() => Option[Set[Int]]) {
   def generate(): Option[Set[Int]]
+  def apply() = generate()
 }
 
 object CoalitionGenerator {
